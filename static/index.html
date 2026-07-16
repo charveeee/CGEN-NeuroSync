@@ -46,10 +46,21 @@
 
     <div class="mt-4 pt-4 border-t border-slate-800/60 flex justify-between items-center">
         <span class="text-xs text-slate-500 font-mono tracking-wider">Total Visualizer Initializations:</span>
-        <img src="https://www.hitwebcounter.com/counter/counter.php?page=21509183&style=0001&nbdigits=5&type=page" 
-             alt="User Counter" 
-             style="height: 15px; filter: invert(0.85) grayscale(1) contrast(1.5); mix-blend-mode: lighten; opacity: 0.85;" />
+        <span id="session-counter" class="text-xs text-slate-400 font-mono font-bold tracking-widest">---</span>
     </div>
+</div>
+
+<script>
+    fetch('https://api.counterapi.dev/v1/cgen-neurosync/global/up')
+        .then(response => response.json())
+        .then(data => {
+            // Pads the number with zeros (e.g., 00042) to keep the hacker look
+            document.getElementById('session-counter').innerText = String(data.count).padStart(5, '0');
+        })
+        .catch(err => {
+            document.getElementById('session-counter').innerText = '00001';
+        });
+</script>
 </div>
         </div>
 
