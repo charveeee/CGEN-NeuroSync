@@ -51,15 +51,22 @@
 </div>
 
 <script>
-    fetch('https://api.counterapi.dev/v1/cgen-neurosync/global/up')
-        .then(response => response.json())
-        .then(data => {
-            // Pads the number with zeros (e.g., 00042) to keep the hacker look
-            document.getElementById('session-counter').innerText = String(data.count).padStart(5, '0');
-        })
-        .catch(err => {
-            document.getElementById('session-counter').innerText = '00001';
-        });
+    // Adding a random timestamp (?t=...) forces the browser to bypass its cache and fetch a fresh count on every reload
+    fetch('https://api.counterapi.dev/v1/cgen-neurosync/global/up?t=' + Date.now(), {
+        cache: 'no-store',
+        headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Pads the number with zeros (e.g., 00042) to keep the hacker look
+        document.getElementById('session-counter').innerText = String(data.count).padStart(5, '0');
+    })
+    .catch(err => {
+        document.getElementById('session-counter').innerText = '00001';
+    });
 </script>
 </div>
         </div>
