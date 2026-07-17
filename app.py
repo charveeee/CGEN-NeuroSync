@@ -112,12 +112,12 @@ cgen = CGENEngine()
 class EEGPayload(BaseModel):
     raw_signals: list[float]
 
-# 1. Renamed API status endpoint
+# API status endpoint
 @app.get("/status")
 def home():
     return {"status": "CGEN-NeuroSync Online", "version": "1.0.0-Beta"}
 
-# 2. Process metrics
+# Process telemetry metrics
 @app.post("/analyze")
 async def analyze_stream(payload: EEGPayload):
     features = processor.clean_and_extract_features(np.array(payload.raw_signals))
@@ -139,15 +139,23 @@ async def analyze_stream(payload: EEGPayload):
         "assist_level": cgen.assist_level
     }
 
-# 3. Mount static directory (to host index.html)
+# Mount static directory configuration
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# 4. Serve the HTML interface dynamically at "/"
+# Core Dynamic UI Navigation Handlers
 @app.get("/")
 async def read_index():
     return FileResponse('static/index.html')
 
-# 5. Run Backend
+@app.get("/console.html")
+async def read_console():
+    return FileResponse('static/console.html')
+
+@app.get("/docs.html")
+async def read_docs():
+    return FileResponse('static/docs.html')
+
+# Run Server Instance
 if __name__ == "__main__":
     print("\n[SYSTEM] Starting CGEN-NeuroSync Web Server on http://127.0.0.1:8000")
     uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True)
