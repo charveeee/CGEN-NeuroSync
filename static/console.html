@@ -3,92 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CGEN-NeuroSync // Neural Telemetry</title>
+    <title>CGEN-NeuroSync Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Fira Code', monospace; }
-        .cyber-glow:hover {
-            box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
-            text-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
-        }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-slate-950">
+<body class="bg-slate-950 text-slate-100 min-h-screen p-6 flex flex-col justify-between">
 
-    <div class="h-1 bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500 w-full"></div>
-
-    <main class="max-w-4xl mx-auto px-6 py-16 flex-grow flex flex-col justify-center">
-        
-        <header class="mb-8">
-            <span class="text-xs font-semibold text-emerald-400 tracking-widest uppercase">Project Overview // v1.4.0</span>
-            <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-slate-100 mt-2">
-                CGEN-<span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">NeuroSync</span>
-            </h1>
-            <p class="text-slate-400 mt-4 leading-relaxed max-w-2xl">
-                An advanced neural visualizer and diagnostic platform designed to process real-time biometric telemetry. Built for decoding complex brainwave ratios and cognitive fatigue signals.
-            </p>
+    <div>
+        <header class="max-w-7xl mx-auto flex justify-between items-center mb-8 border-b border-slate-900 pb-4">
+            <div class="flex items-center space-x-3">
+                <a href="/" class="h-3 w-3 rounded-full bg-emerald-500 animate-pulse block" title="Back to Portal"></a>
+                <h1 class="text-xl font-bold tracking-widest text-slate-200">CGEN-NEUROSYNC</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="/" class="text-xs text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-wider">← Back to Portal</a>
+                <span class="text-xs bg-slate-900 border border-slate-800 text-slate-400 px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
+                    Telemetry Console // LIVE
+                </span>
+            </div>
         </header>
 
-        <section class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-5 mb-12 max-w-2xl">
-            <div class="flex items-start space-x-3">
-                <span class="text-emerald-500 text-lg mt-0.5">⚡</span>
-                <div>
-                    <h3 class="text-sm font-semibold text-slate-200">Hardware Integration Status</h3>
-                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">
-                        Physical neural capture arrays are currently offline. System is currently operating on an <strong class="text-emerald-400/90">accurate mathematical simulation matrix</strong> to mimic live biometric activity without active hardware connection.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <section class="mb-16">
-            <a href="/console.html" 
-               class="inline-flex items-center space-x-3 bg-emerald-950/40 border border-emerald-500/30 hover:border-emerald-400 text-emerald-400 font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:-translate-y-1 cyber-glow">
-                <span>TRY CGEN-NEUROSYNC</span>
-                <span class="animate-pulse">→</span>
-            </a>
-        </section>
-
-    </main>
-
-    <footer class="bg-slate-900/40 border-t border-slate-900 py-8 px-6 text-xs text-slate-500">
-        <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+        <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
             
-            <div>
-                <h4 class="font-bold text-slate-400 mb-2 uppercase tracking-wider">Developer Access</h4>
-                <p class="text-slate-500">Charvee Trehan</p>
-                <p class="mt-1 hover:text-emerald-400 transition-colors"><a href="mailto:your-email@example.com">ctrehan@cgen.dev</a></p>
-            </div>
-
-            <div>
-                <h4 class="font-bold text-slate-400 mb-2 uppercase tracking-wider">Patent/PPA Status</h4>
-                <p class="text-slate-500">PPA Status: <span class="text-emerald-500/80 font-semibold">Active / Pending Verification</span></p>
-                <p class="mt-1">ID: #CGEN-US-2026-A</p>
-            </div>
-
-            <div class="flex flex-col md:items-end justify-between">
-                <div>
-                    <h4 class="font-bold text-slate-400 mb-2 uppercase tracking-wider md:text-right">Metrics</h4>
-                    <p class="md:text-right">Total Visualizer Initializations: <span id="session-counter" class="text-slate-300 font-bold tracking-widest">---</span></p>
+            <div class="space-y-6 lg:col-span-1">
+                
+                <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6">
+                    <h2 class="text-lg font-bold mb-2 text-slate-200">Hardware Connection</h2>
+                    <p class="text-xs text-slate-400 mb-6 leading-relaxed">Connect to the virtual EEG headband to begin passive, non-explicit cognitive tracking.</p>
+                    
+                    <div class="flex items-center justify-between bg-slate-950 p-4 rounded-xl border border-slate-900">
+                        <span class="text-sm font-semibold text-slate-300">EEG Headstream Link</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="stream-toggle" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 peer-checked:after:bg-slate-950"></div>
+                        </label>
+                    </div>
                 </div>
+
+                <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6 flex flex-col h-[280px] justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold mb-4 text-slate-200">CGEN Action Logs</h2>
+                        <div id="logs-container" class="space-y-2 text-xs text-slate-500 max-h-[160px] overflow-y-auto font-mono">
+                            <div class="text-slate-400 animate-pulse">Awaiting passive stream connection...</div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-        </div>
+            <div class="lg:col-span-2 space-y-6">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="/docs.html" class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 hover:border-blue-500/50 transition-all duration-200 block">
+                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-1">Beta/Alpha Ratio</span>
+                        <span id="ratio-display" class="text-3xl font-extrabold text-blue-400">0.00</span>
+                    </a>
+                    <a href="/docs.html" class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 hover:border-emerald-500/50 transition-all duration-200 block">
+                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-1">Alpha Power (Calm)</span>
+                        <span id="alpha-display" class="text-3xl font-extrabold text-emerald-400">0.0</span>
+                    </a>
+                    <a href="/docs.html" class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 hover:border-red-500/50 transition-all duration-200 block">
+                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-1">Beta Power (Focus)</span>
+                        <span id="beta-display" class="text-3xl font-extrabold text-red-400">0.0</span>
+                    </a>
+                </div>
+
+                <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6">
+                    <h2 class="text-lg font-bold mb-4 text-slate-200">Continuous Biometric Telemetry</h2>
+                    <div class="h-[250px]">
+                        <canvas id="telemetryChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <footer class="max-w-7xl w-full mx-auto pt-6 border-t border-slate-900 text-center text-[10px] text-slate-600 uppercase tracking-widest">
+        Secure Telemetry Network // Terminal Active
     </footer>
 
     <script>
-        fetch('https://countapi.mileshilliard.com/api/v1/hit/cgen_neurosync_visualizer_initializations')
-            .then(response => {
-                if (!response.ok) throw new Error('API request failed');
-                return response.json();
-            })
-            .then(data => {
-                document.getElementById('session-counter').innerText = String(data.value).padStart(5, '0');
-            })
-            .catch(err => {
-                document.getElementById('session-counter').innerText = '00108';
-            });
+        const ctx = document.getElementById('telemetryChart').getContext('2d');
+        const telemetryChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 40}, (_, i) => i + 1),
+                datasets: [{
+                    label: 'EEG Telemetry Bandwidth',
+                    data: Array(40).fill(null),
+                    borderColor: '#10b981',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { min: 0, max: 5, grid: { color: 'rgba(51, 65, 85, 0.15)' }, ticks: { color: '#64748b' } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        let activeStream = null;
+        const toggle = document.getElementById('stream-toggle');
+        const logs = document.getElementById('logs-container');
+
+        function appendLog(text) {
+            const entry = document.createElement('div');
+            entry.className = "text-slate-400";
+            entry.innerText = `[${new Date().toLocaleTimeString()}] ${text}`;
+            logs.appendChild(entry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        toggle.addEventListener('change', () => {
+            if (toggle.checked) {
+                logs.innerHTML = '';
+                appendLog("Connecting to NeuroSync Telemetry Stream...");
+                activeStream = setInterval(async () => {
+                    const mockSignals = Array.from({length: 250}, () => (Math.random() - 0.5) * 80);
+                    try {
+                        const response = await fetch('/analyze', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ raw_signals: mockSignals })
+                        });
+                        const data = await response.json();
+                        if (data.status === "processed") {
+                            document.getElementById('ratio-display').innerText = data.ratio.toFixed(2);
+                            document.getElementById('alpha-display').innerText = data.alpha_power.toFixed(1);
+                            document.getElementById('beta-display').innerText = data.beta_power.toFixed(1);
+                            
+                            telemetryChart.data.datasets[0].data.shift();
+                            telemetryChart.data.datasets[0].data.push(data.ratio);
+                            telemetryChart.update();
+
+                            appendLog(`Metrics synced. Assist Level: ${data.assist_level}`);
+                        }
+                    } catch (e) {
+                        appendLog("Network latency encountered. Re-establishing chunk link...");
+                    }
+                }, 1000);
+            } else {
+                clearInterval(activeStream);
+                activeStream = null;
+                appendLog("Headstream link terminated.");
+            }
+        });
     </script>
 </body>
 </html>
