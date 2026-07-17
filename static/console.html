@@ -3,88 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CGEN-NeuroSync Dashboard</title>
+    <title>CGEN-NeuroSync Telemetry Console</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Fira Code', monospace; }
-    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-6 flex flex-col justify-between">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans p-6">
 
-    <div>
-        <header class="max-w-7xl mx-auto flex justify-between items-center mb-8 border-b border-slate-900 pb-4">
+    <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-900 pb-6 mb-8 gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-slate-400">
+                CGEN-NEUROSYNC
+            </h1>
+            <p class="text-xs text-slate-500 font-mono tracking-widest uppercase mt-1">
+                Passive Cognitive Diagnostics Gateway
+            </p>
+        </div>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-slate-900/40 p-3 rounded-xl border border-slate-900">
             <div class="flex items-center space-x-3">
-                <a href="/" class="h-3 w-3 rounded-full bg-emerald-500 animate-pulse block" title="Back to Portal"></a>
-                <h1 class="text-xl font-bold tracking-widest text-slate-200">CGEN-NEUROSYNC</h1>
+                <span class="text-xs text-slate-400 font-mono font-medium">EEG Headstream Link</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="stream-toggle" class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-800 rounded-full peer peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 peer-checked:after:bg-slate-950"></div>
+                </label>
             </div>
-            <div class="flex items-center space-x-4">
-                <a href="/" class="text-xs text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-wider">← Back to Portal</a>
-                <span class="text-xs bg-slate-900 border border-slate-800 text-slate-400 px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
-                    Telemetry Console // LIVE
-                </span>
-            </div>
-        </header>
+        </div>
+    </header>
 
-        <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+    <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="lg:col-span-2 space-y-6">
             
-            <div class="space-y-6 lg:col-span-1">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
-                <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6">
-                    <h2 class="text-lg font-bold mb-2 text-slate-200">Hardware Connection</h2>
-                    <p class="text-xs text-slate-400 mb-6 leading-relaxed">Connect to the virtual EEG headband to begin passive, non-explicit cognitive tracking.</p>
-                    
-                    <div class="flex items-center justify-between bg-slate-950 p-4 rounded-xl border border-slate-900">
-                        <span class="text-sm font-semibold text-slate-300">EEG Headstream Link</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="stream-toggle" class="sr-only peer">
-                            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 peer-checked:after:bg-slate-950"></div>
-                        </label>
+                <div class="bg-slate-900/50 border border-slate-900 rounded-2xl p-6 shadow-sm flex flex-col justify-between min-h-[140px]">
+                    <a href="/docs.html" class="text-xs font-bold font-mono tracking-widest text-slate-400 uppercase hover:text-blue-400 transition-colors flex justify-between items-center group">
+                        <span>Beta/Alpha Ratio</span>
+                        <span class="text-slate-600 group-hover:text-blue-400 transition-colors">↗</span>
+                    </a>
+                    <div id="ratio-display" class="text-4xl font-extrabold tracking-tight text-blue-400 mt-4 font-mono">
+                        0.00
                     </div>
                 </div>
 
-                <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6 flex flex-col h-[280px] justify-between">
-                    <div>
-                        <h2 class="text-lg font-bold mb-4 text-slate-200">CGEN Action Logs</h2>
-                        <div id="logs-container" class="space-y-2 text-xs text-slate-500 max-h-[160px] overflow-y-auto font-mono">
-                            <div class="text-slate-400 animate-pulse">Awaiting passive stream connection...</div>
-                        </div>
+                <div class="bg-slate-900/50 border border-slate-900 rounded-2xl p-6 shadow-sm flex flex-col justify-between min-h-[140px]">
+                    <a href="/docs.html" class="text-xs font-bold font-mono tracking-widest text-slate-400 uppercase hover:text-emerald-400 transition-colors flex justify-between items-center group">
+                        <span>Alpha Power (Calm)</span>
+                        <span class="text-slate-600 group-hover:text-emerald-400 transition-colors">↗</span>
+                    </a>
+                    <div id="alpha-display" class="text-4xl font-extrabold tracking-tight text-emerald-400 mt-4 font-mono">
+                        0.0
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/50 border border-slate-900 rounded-2xl p-6 shadow-sm flex flex-col justify-between min-h-[140px]">
+                    <a href="/docs.html" class="text-xs font-bold font-mono tracking-widest text-slate-400 uppercase hover:text-red-400 transition-colors flex justify-between items-center group">
+                        <span>Beta Power (Focus)</span>
+                        <span class="text-slate-600 group-hover:text-red-400 transition-colors">↗</span>
+                    </a>
+                    <div id="beta-display" class="text-4xl font-extrabold tracking-tight text-red-400 mt-4 font-mono">
+                        0.0
                     </div>
                 </div>
 
             </div>
 
-            <div class="lg:col-span-2 space-y-6">
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <a href="/docs.html" class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 hover:border-blue-500/50 transition-all duration-200 block">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-1">Beta/Alpha Ratio</span>
-                        <span id="ratio-display" class="text-3xl font-extrabold text-blue-400">0.00</span>
-                    </a>
-                    <a href="/docs.html" class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 hover:border-emerald-500/50 transition-all duration-200 block">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-1">Alpha Power (Calm)</span>
-                        <span id="alpha-display" class="text-3xl font-extrabold text-emerald-400">0.0</span>
-                    </a>
-                    <a href="/docs.html" class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 hover:border-red-500/50 transition-all duration-200 block">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-1">Beta Power (Focus)</span>
-                        <span id="beta-display" class="text-3xl font-extrabold text-red-400">0.0</span>
-                    </a>
+            <div class="bg-slate-900/50 border border-slate-900 rounded-2xl p-6 shadow-sm">
+                <h2 class="text-sm font-bold font-mono tracking-widest text-slate-400 uppercase mb-4">
+                    Continuous Biometric Telemetry
+                </h2>
+                <div class="h-[340px] w-full">
+                    <canvas id="telemetryChart"></canvas>
                 </div>
+            </div>
 
-                <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6">
-                    <h2 class="text-lg font-bold mb-4 text-slate-200">Continuous Biometric Telemetry</h2>
-                    <div class="h-[250px]">
-                        <canvas id="telemetryChart"></canvas>
+        </div>
+
+        <div class="space-y-6">
+            
+            <div class="bg-slate-900/50 border border-slate-900 rounded-2xl p-6 shadow-sm flex flex-col h-[535px] justify-between">
+                <div>
+                    <h2 class="text-sm font-bold font-mono tracking-widest text-slate-400 uppercase mb-4">
+                        CGEN Action Logs
+                    </h2>
+                    <div id="logs-container" class="space-y-3 text-xs text-slate-400 font-mono overflow-y-auto max-h-[440px] pr-2">
+                        <div class="italic text-slate-600 animate-pulse">Awaiting passive stream connection...</div>
                     </div>
                 </div>
-
             </div>
-        </main>
-    </div>
 
-    <footer class="max-w-7xl w-full mx-auto pt-6 border-t border-slate-900 text-center text-[10px] text-slate-600 uppercase tracking-widest">
-        Secure Telemetry Network // Terminal Active
+        </div>
+
+    </main>
+
+    <footer class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 pt-6 border-t border-slate-900 text-xs font-mono text-slate-500 tracking-wider">
+        <div>
+            <span class="block font-bold text-slate-400 uppercase mb-1">Developer Access</span>
+            <span class="block">Charvee Trehan</span>
+            <span class="block text-emerald-500/70">ctrehan@cgen.dev</span>
+        </div>
+        <div>
+            <span class="block font-bold text-slate-400 uppercase mb-1">Patent/PPA Status</span>
+            <div class="flex items-center space-x-1.5">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-emerald-400 font-bold">Active / Pending Verification</span>
+            </div>
+        </div>
+        <div class="md:text-right">
+            <span class="block font-bold text-slate-400 uppercase mb-1">Metrics</span>
+            <span>Total Visualizer Initializations: </span>
+            <span id="session-counter" class="text-slate-300 font-bold tracking-widest">00040</span>
+        </div>
     </footer>
 
     <script>
@@ -95,7 +123,7 @@
                 labels: Array.from({length: 40}, (_, i) => i + 1),
                 datasets: [{
                     label: 'EEG Telemetry Bandwidth',
-                    data: Array(40).fill(null),
+                    data: Array(40).fill(null), // Keeps the graph clean on load
                     borderColor: '#10b981',
                     borderWidth: 2,
                     tension: 0.3,
@@ -107,7 +135,12 @@
                 maintainAspectRatio: false,
                 scales: {
                     x: { display: false },
-                    y: { min: 0, max: 5, grid: { color: 'rgba(51, 65, 85, 0.15)' }, ticks: { color: '#64748b' } }
+                    y: { 
+                        min: 0, 
+                        max: 5, 
+                        grid: { color: 'rgba(51, 65, 85, 0.15)' }, 
+                        ticks: { color: '#64748b' } 
+                    }
                 },
                 plugins: { legend: { display: false } }
             }
@@ -143,8 +176,11 @@
                             document.getElementById('alpha-display').innerText = data.alpha_power.toFixed(1);
                             document.getElementById('beta-display').innerText = data.beta_power.toFixed(1);
                             
+                            // Beautiful sliding continuous update
                             telemetryChart.data.datasets[0].data.shift();
-                            telemetryChart.data.datasets[0].data.push(data.ratio);
+                            // Scale ratio nicely to fit 0 - 5.0 range
+                            const graphValue = Math.min(Math.max(data.ratio * 1.5 + 1.5, 0.5), 4.8);
+                            telemetryChart.data.datasets[0].data.push(graphValue);
                             telemetryChart.update();
 
                             appendLog(`Metrics synced. Assist Level: ${data.assist_level}`);
@@ -159,6 +195,18 @@
                 appendLog("Headstream link terminated.");
             }
         });
+
+        // Pull Initialization Count
+        fetch('https://countapi.mileshilliard.com/api/v1/hit/cgen_neurosync_visualizer_initializations')
+            .then(res => res.json())
+            .then(data => {
+                if (data.value) {
+                    document.getElementById('session-counter').innerText = String(data.value).padStart(5, '0');
+                }
+            })
+            .catch(() => {
+                document.getElementById('session-counter').innerText = "00040";
+            });
     </script>
 </body>
 </html>
