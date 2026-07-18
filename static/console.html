@@ -83,24 +83,26 @@
     <script>
         // --- Real-time Chart Configuration ---
         const ctx = document.getElementById('ratioChart').getContext('2d');
-        const chartData = {
-            labels: Array(20).fill(''),
-            datasets: [{
-                label: 'Beta/Alpha Ratio (Cognitive Load)',
-                data: Array(20).fill(null),
-                borderColor: '#60a5fa',
-                borderWidth: 3,
-                backgroundColor: 'rgba(96, 165, 250, 0.05)',
-                fill: true,
-                tension: 0.4,
-                pointRadius: 4,
-                pointBackgroundColor: '#3b82f6'
-            }]
-        };
-
+        
+        // Initializing with explicitly safe zero values so shift/push works perfectly
+        const initialData = Array(20).fill(0);
+        
         const ratioChart = new Chart(ctx, {
             type: 'line',
-            data: chartData,
+            data: {
+                labels: Array(20).fill(''),
+                datasets: [{
+                    label: 'Beta/Alpha Ratio (Cognitive Load)',
+                    data: initialData,
+                    borderColor: '#60a5fa',
+                    borderWidth: 3,
+                    backgroundColor: 'rgba(96, 165, 250, 0.05)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#3b82f6'
+                }]
+            },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -109,8 +111,8 @@
                     y: { 
                         grid: { color: '#1e293b' },
                         ticks: { color: '#94a3b8' },
-                        suggestMin: 1.0,
-                        suggestMax: 8.0
+                        suggestMin: 0.0,
+                        suggestMax: 5.0
                     }
                 },
                 plugins: { legend: { display: false } }
@@ -118,8 +120,8 @@
         });
 
         function addChartData(value) {
-            chartData.datasets[0].data.shift();
-            chartData.datasets[0].data.push(value);
+            ratioChart.data.datasets[0].data.shift();
+            ratioChart.data.datasets[0].data.push(value);
             ratioChart.update();
         }
 
