@@ -1,12 +1,11 @@
-import numpy as np
-from scipy.signal import butter, lfilter
-from collections import deque
+import nest_asyncio
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from pydantic import BaseModel
+import numpy as np
+from scipy.signal import butter, lfilter
+from collections import deque
 
 # --- 1. BIOMETRIC PIPELINE ENGINES ---
 
@@ -40,7 +39,7 @@ class SynapseSignalProcessor:
         alpha_power = np.sum(fft_vals[alpha_mask])
         beta_power = np.sum(fft_vals[beta_mask])
         
-        if alpha_power == 0:
+        if alpha_power == 0: 
             alpha_power = 0.001
         
         return {
@@ -112,12 +111,10 @@ cgen = CGENEngine()
 class EEGPayload(BaseModel):
     raw_signals: list[float]
 
-# API status endpoint
-@app.get("/status")
+@app.get("/")
 def home():
     return {"status": "CGEN-NeuroSync Online", "version": "1.0.0-Beta"}
 
-# Process telemetry metrics
 @app.post("/analyze")
 async def analyze_stream(payload: EEGPayload):
     features = processor.clean_and_extract_features(np.array(payload.raw_signals))
@@ -139,23 +136,6 @@ async def analyze_stream(payload: EEGPayload):
         "assist_level": cgen.assist_level
     }
 
-# Mount static directory configuration
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Core Dynamic UI Navigation Handlers
-@app.get("/")
-async def read_index():
-    return FileResponse('static/index.html')
-
-@app.get("/console.html")
-async def read_console():
-    return FileResponse('static/console.html')
-
-@app.get("/docs.html")
-async def read_docs():
-    return FileResponse('static/docs.html')
-
-# Run Server Instance
 if __name__ == "__main__":
     print("\n[SYSTEM] Starting CGEN-NeuroSync Web Server on http://127.0.0.1:8000")
-    uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
