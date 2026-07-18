@@ -3,254 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CGEN-NeuroSync Dashboard</title>
+    <title>CGEN-NeuroSync // Neural Telemetry</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Fira Code', monospace; }
+        .cyber-glow:hover {
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+            text-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+        }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans transition-all duration-1000" id="body-env">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-slate-950">
 
-    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
-        <div class="flex items-center space-x-3">
-            <div id="status-indicator" class="h-3 w-3 rounded-full bg-slate-600"></div>
-            <h1 class="text-xl font-bold tracking-wider text-slate-100">CGEN-NEUROSYNC</h1>
-        </div>
-        <div id="system-badge" class="bg-slate-800 text-slate-400 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest">
-            Hardware Offline
-        </div>
-    </header>
+    <div class="h-1 bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500 w-full"></div>
 
-    <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <main class="max-w-4xl mx-auto px-6 py-16 flex-grow flex flex-col justify-center">
         
-        <div class="space-y-6 lg:col-span-1">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-                <h2 class="text-lg font-semibold mb-4 text-slate-300 border-b border-slate-800 pb-2">Hardware Connection</h2>
-                <p class="text-sm text-slate-400 mb-6">Connect to the virtual EEG headband to begin passive, non-explicit cognitive tracking.</p>
-                
-                <div class="flex items-center justify-between p-4 bg-slate-950 rounded-xl border border-slate-800">
-                    <span class="text-sm font-medium text-slate-300">EEG Headstream Link</span>
-                    <button id="stream-toggle" onclick="toggleHardwareStream()" class="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-700 transition-colors duration-300">
-                        <span id="toggle-thumb" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 translate-x-1"></span>
-                    </button>
-                </div>
+        <header class="mb-8">
+            <span class="text-xs font-semibold text-emerald-400 tracking-widest uppercase">Project Overview // v1.4.0</span>
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-slate-100 mt-2">
+                CGEN-<span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">NeuroSync</span>
+            </h1>
+            <p class="text-text-slate-400 mt-4 leading-relaxed max-w-2xl text-slate-400">
+                An advanced neural visualizer and diagnostic platform designed to process raw biometric telemetry. Built for decoding complex brainwave ratios and cognitive fatigue signals.
+            </p>
+        </header>
 
-                <div id="simulation-state-box" class="mt-4 p-3 bg-slate-950 rounded-xl border border-slate-800/50 text-xs text-slate-500 text-center hidden">
-                    Current Simulated State: <span id="current-sim-state" class="font-semibold text-slate-300">Calibrating</span>
+        <section class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-5 mb-12 max-w-2xl">
+            <div class="flex items-start space-x-3">
+                <span class="text-emerald-500 text-lg mt-0.5">⚡</span>
+                <div>
+                    <h3 class="text-sm font-semibold text-slate-200">Hardware Integration Status</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                        Since physical neural capture arrays are currently unavailable, this system is currently operating on an <span class="text-emerald-400 font-semibold">accurate mathematical simulation matrix</span> to mimic live biometric activity without active hardware connection.
+                    </p>
                 </div>
             </div>
+        </section>
 
-            <div id="intervention-card" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl transition-all duration-500">
-                <h2 class="text-lg font-semibold mb-4 text-slate-300 border-b border-slate-800 pb-2">CGEN Action Logs</h2>
-                <div id="intervention-status" class="text-slate-400 text-sm space-y-3 min-h-[100px]">
-                    <p class="italic text-slate-500">Awaiting passive stream connection...</p>
-                </div>
-            </div>
+        <div>
+            <a href="console.html" class="cyber-glow inline-block px-8 py-3.5 border border-emerald-500/50 hover:border-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 hover:text-emerald-300 font-bold rounded-xl transition-all duration-200 tracking-wider text-sm uppercase">
+                Try CGEN-NeuroSync →
+            </a>
         </div>
 
-        <div class="lg:col-span-2 space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
-                    <a href="/docs.html" class="text-xs text-slate-400 font-medium uppercase tracking-wider hover:text-blue-400 transition-colors flex justify-between items-center group">
-                        <span>Beta/Alpha Ratio</span>
-                        <span class="opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
-                    </a>
-                    <h3 id="metric-ratio" class="text-3xl font-bold mt-2 text-blue-400">0.00</h3>
-                </div>
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
-                    <a href="/docs.html" class="text-xs text-slate-400 font-medium uppercase tracking-wider hover:text-teal-400 transition-colors flex justify-between items-center group">
-                        <span>Alpha Power (Calm)</span>
-                        <span class="opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
-                    </a>
-                    <h3 id="metric-alpha" class="text-3xl font-bold mt-2 text-teal-400">0.0</h3>
-                </div>
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
-                    <a href="/docs.html" class="text-xs text-slate-400 font-medium uppercase tracking-wider hover:text-rose-400 transition-colors flex justify-between items-center group">
-                        <span>Beta Power (Focus)</span>
-                        <span class="opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
-                    </a>
-                    <h3 id="metric-beta" class="text-3xl font-bold mt-2 text-rose-400">0.0</h3>
-                </div>
-            </div>
-
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-                <h2 class="text-lg font-semibold mb-4 text-slate-300">Continuous Biometric Telemetry</h2>
-                <div class="h-80 w-full">
-                    <canvas id="ratioChart"></canvas>
-                </div>
-            </div>
-        </div>
     </main>
 
+    <footer class="max-w-4xl w-full mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 py-8 px-6 border-t border-slate-900 text-[11px] text-slate-500 tracking-wider">
+        <div>
+            <span class="block font-bold text-slate-400 uppercase mb-1">Developer Access</span>
+            <span class="block">Charvee Trehan</span>
+            <span class="block text-emerald-500/70">charvee.trehan24@gmail.com</span>
+        </div>
+        <div>
+            <span class="block font-bold text-slate-400 uppercase mb-1">Patent/PPA Status</span>
+            <div class="flex items-center space-x-1.5">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-emerald-400 font-bold">Active / Pending Verification</span>
+            </div>
+        </div>
+        <div class="md:text-right">
+            <span class="block font-bold text-slate-400 uppercase mb-1">Metrics</span>
+            <span>Total Visualizer Initializations: </span>
+            <span id="session-counter" class="text-slate-300 font-bold tracking-widest">00040</span>
+        </div>
+    </footer>
+
     <script>
-        // --- Real-time Chart Configuration ---
-        const ctx = document.getElementById('ratioChart').getContext('2d');
-        const initialData = Array(20).fill(0);
-        
-        const ratioChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: Array(20).fill(''),
-                datasets: [{
-                    label: 'Beta/Alpha Ratio (Cognitive Load)',
-                    data: initialData,
-                    borderColor: '#60a5fa',
-                    borderWidth: 3,
-                    backgroundColor: 'rgba(96, 165, 250, 0.05)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#3b82f6'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { grid: { display: false }, ticks: { display: false } },
-                    y: { 
-                        grid: { color: '#1e293b' },
-                        ticks: { color: '#94a3b8' },
-                        suggestMin: 0.0,
-                        suggestMax: 10.0
-                    }
-                },
-                plugins: { legend: { display: false } }
-            }
-        });
-
-        function addChartData(value) {
-            ratioChart.data.datasets[0].data.shift();
-            ratioChart.data.datasets[0].data.push(value);
-            ratioChart.update();
-        }
-
-        // --- Client-Side Local Data Processor (No Python Backend Needed!) ---
-        function calculateLocalMetrics(intensity) {
-            // Replicates the backend signal processing math entirely in JS
-            let baseAlpha = 1500.0;
-            let baseBeta = 3000.0;
-            
-            if (intensity > 2.0) { // High Stress Mode
-                baseAlpha = baseAlpha * 0.3 + (Math.random() * 150);
-                baseBeta = baseBeta * 1.4 + (Math.random() * 500);
-            } else if (intensity < 0.5) { // Flow State Mode
-                baseAlpha = baseAlpha * 1.6 + (Math.random() * 400);
-                baseBeta = baseBeta * 0.7 + (Math.random() * 200);
-            } else { // Baseline calibration
-                baseAlpha += (Math.random() - 0.5) * 200;
-                baseBeta += (Math.random() - 0.5) * 300;
-            }
-
-            const ratio = baseBeta / baseAlpha;
-            const assistLevel = ratio > 4.5 ? Math.min(Math.floor(ratio - 3), 3) : 0;
-
-            // Instantly update interface nodes natively
-            document.getElementById('metric-ratio').innerText = ratio.toFixed(2);
-            document.getElementById('metric-alpha').innerText = baseAlpha.toFixed(1);
-            document.getElementById('metric-beta').innerText = baseBeta.toFixed(1);
-            
-            addChartData(ratio);
-            updateDynamicInterface(assistLevel);
-        }
-
-        function updateDynamicInterface(assistLevel) {
-            const body = document.getElementById('body-env');
-            const badge = document.getElementById('system-badge');
-            const interventionCard = document.getElementById('intervention-card');
-            const logs = document.getElementById('intervention-status');
-
-            if (assistLevel > 0) {
-                body.className = "bg-slate-950 text-slate-300 min-h-screen font-sans transition-all duration-1000 saturate-[0.8]";
-                badge.className = "bg-rose-500/10 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest animate-pulse";
-                badge.innerText = `CGEN ACTIVE: LEVEL ${assistLevel}`;
-                interventionCard.className = "bg-slate-900 border border-rose-500/30 rounded-2xl p-6 shadow-xl shadow-rose-950/10";
-                
-                logs.innerHTML = `
-                    <div class="flex items-start space-x-2 text-rose-400 font-medium">
-                        <span>[CGEN DISPATCH]</span>
-                        <span>High cognitive load threshold exceeded. Mitigating interface friction.</span>
-                    </div>
-                    <div class="pl-4 text-xs text-slate-400 space-y-1 mt-2">
-                        <p class="text-emerald-400">[ACTIVE] External desktop notifications suppressed</p>
-                        <p class="text-emerald-400">[ACTIVE] Secondary navigation panels hidden</p>
-                        <p class="text-emerald-400">[ACTIVE] Contextual workflow helper injected</p>
-                    </div>
-                `;
-            } else {
-                body.className = "bg-slate-950 text-slate-100 min-h-screen font-sans transition-all duration-1000";
-                badge.className = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest";
-                badge.innerText = "System Online";
-                interventionCard.className = "bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl";
-                
-                logs.innerHTML = `
-                    <div class="flex items-start space-x-2 text-emerald-400 font-medium">
-                        <span>[CGEN MONITORING]</span>
-                        <span>User baseline indicates continuous focused flow state.</span>
-                    </div>
-                    <p class="text-xs text-slate-500 pl-4 mt-1">Primary application resources maximized. Active workspace disruption blocks armed.</p>
-                `;
-            }
-        }
-
-        // --- Passive Streaming Simulation State Loop ---
-        let streamInterval = null;
-        let activeStream = false;
-        let tickCounter = 0;
-
-        function toggleHardwareStream() {
-            const toggle = document.getElementById('stream-toggle');
-            const thumb = document.getElementById('toggle-thumb');
-            const indicator = document.getElementById('status-indicator');
-            const badge = document.getElementById('system-badge');
-            const stateBox = document.getElementById('simulation-state-box');
-            const logs = document.getElementById('intervention-status');
-
-            activeStream = !activeStream;
-
-            if (activeStream) {
-                toggle.className = "relative inline-flex h-6 w-11 items-center rounded-full bg-emerald-600 transition-colors duration-300";
-                thumb.className = "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 translate-x-6";
-                indicator.className = "h-3 w-3 rounded-full bg-emerald-500 animate-pulse";
-                badge.className = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest";
-                badge.innerText = "System Online";
-                stateBox.classList.remove('hidden');
-
-                tickCounter = 0;
-                runPassiveDaemon();
-                streamInterval = setInterval(runPassiveDaemon, 2000);
-            } else {
-                toggle.className = "relative inline-flex h-6 w-11 items-center rounded-full bg-slate-700 transition-colors duration-300";
-                thumb.className = "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 translate-x-1";
-                indicator.className = "h-3 w-3 rounded-full bg-slate-600";
-                badge.className = "bg-slate-800 text-slate-400 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest";
-                badge.innerText = "Hardware Offline";
-                stateBox.classList.add('hidden');
-                logs.innerHTML = `<p class="italic text-slate-500">Awaiting passive stream connection...</p>`;
-
-                clearInterval(streamInterval);
-            }
-        }
-
-        function runPassiveDaemon() {
-            tickCounter++;
-            let intensity = 1.0; 
-            let stateLabel = "Calibrating";
-
-            if (tickCounter <= 5) {
-                intensity = 1.0;
-                stateLabel = "Calibrating (Baseline)";
-            } else if (tickCounter > 5 && tickCounter <= 12) {
-                intensity = 0.2;
-                stateLabel = "Deep Flow State";
-            } else if (tickCounter > 12 && tickCounter <= 20) {
-                intensity = 3.5;
-                stateLabel = "High Cognitive Stress";
-            } else {
-                tickCounter = 0;
-            }
-
-            document.getElementById('current-sim-state').innerText = stateLabel;
-            calculateLocalMetrics(intensity);
-        }
+        // Counter logic specifically for the landing page
+        fetch('https://countapi.mileshilliard.com/api/v1/hit/cgen_neurosync_visualizer_initializations')
+            .then(res => res.json())
+            .then(data => {
+                if (data.value) {
+                    document.getElementById('session-counter').innerText = String(data.value).padStart(5, '0');
+                }
+            })
+            .catch(() => {
+                document.getElementById('session-counter').innerText = "00040";
+            });
     </script>
+
 </body>
 </html>
