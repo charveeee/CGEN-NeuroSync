@@ -400,7 +400,7 @@
 
         let shiftDelta = Math.sqrt(Math.pow(currentX - lastGazeX, 2) + Math.pow(currentY - lastGazeY, 2));
         
-        if (shiftDelta < 50) { 
+        if (shiftDelta < 200) { 
             focusTimer += 150; 
             if (focusTimer > 3000 && !isCognitivelyBlocked) {
                 isCognitivelyBlocked = true;
@@ -418,6 +418,7 @@
         lastGazeY = currentY;
     });
 
+    // Fire the engine initialization sequence
 // Fire the engine initialization sequence cleanly
     try {
         webgazer.begin();
