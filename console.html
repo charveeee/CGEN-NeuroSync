@@ -379,47 +379,48 @@
 
         // --- Native Computer Vision Gaze Listener (WebGazer) ---
         async function startWebcamEyeTracking() {
-            logMessage("Spawning local CV telemetry framework matrices...", "ACTIVE");
+    logMessage("Spawning local CV telemetry framework matrices...", "ACTIVE");
 
-            webgazer.setGazeListener(function(data, elapsedTime) {
-                if (data == null || !activeStream || currentMode !== 'webcam') return;
+    // Make sure WebGazer is fully cleared before restarting
+    try { webgazer.end(); } catch(e){}
 
-                let currentX = data.x; 
-                let currentY = data.y;
+    webgazer.setGazeListener(function(data, elapsedTime) {
+        if (data == null || !activeStream || currentMode !== 'webcam') return;
 
-                // Calculate vector shift radius from previous coordinates
-                let shiftDelta = Math.sqrt(Math.pow(currentX - lastGazeX, 2) + Math.pow(currentY - lastGazeY, 2));
-                
-                if (shiftDelta < 50) { 
-                    // Eyes are hovering inside structural zone boundaries
-                    focusTimer += 150; 
-                    
-                    if (focusTimer > 3000 && !isCognitivelyBlocked) {
-                        isCognitivelyBlocked = true;
-                        logMessage("Fixated ocular tracking path identified. Initializing cognitive lockout.", "CRITICAL");
-                    }
-                } else {
-                    focusTimer = 0; // Gaze shifted, reset timer thresholds
-                    if (isCognitivelyBlocked) {
-                        isCognitivelyBlocked = false;
-                        logMessage("Saccadic visual unlock tracked. Re-stabilizing cognitive load metrics.", "ACTIVE");
-                    }
-                }
+        let currentX = data.x; 
+        let currentY = data.y;
 
-                lastGazeX = currentX;
-                lastGazeY = currentY;
-            }).begin();
-
-            // Intercept WebGazer video output and insert into split pane container
-            setTimeout(() => {
-                const nativeVideo = document.getElementById('webgazerVideoFeed');
-                if (nativeVideo && videoContainer) {
-                    placeholderText.classList.add('hidden');
-                    videoContainer.appendChild(nativeVideo);
-                    logMessage("Webcam matrix synchronized. Gaze calibration protocols operational.", "ACTIVE");
-                }
-            }, 1800);
+        let shiftDelta = Math.sqrt(Math.pow(currentX - lastGazeX, 2) + Math.pow(currentY - lastGazeY, 2));
+        
+        if (shiftDelta < 50) { 
+            focusTimer += 150; 
+            if (focusTimer > 3000 && !isCognitivelyBlocked) {
+                isCognitivelyBlocked = true;
+                logMessage("Fixated ocular tracking path identified. Initializing cognitive lockout.", "CRITICAL");
+            }
+        } else {
+            focusTimer = 0; 
+            if (isCognitivelyBlocked) {
+                isCognitivelyBlocked = false;
+                logMessage("Saccadic visual unlock tracked. Re-stabilizing cognitive load metrics.", "ACTIVE");
+            }
         }
+
+        lastGazeX = currentX;
+        lastGazeY = currentY;
+    }).begin();
+
+    // Check every 500ms if the video feed element is ready in the DOM
+    const videoCheckInterval = setInterval(() => {
+        const nativeVideo = document.getElementById('webgazerVideoFeed');
+        if (nativeVideo && videoContainer) {
+            clearInterval(videoCheckInterval); // Stop checking once found
+            placeholderText.classList.add('hidden');
+            videoContainer.appendChild(nativeVideo);
+            logMessage("Webcam matrix synchronized. Gaze calibration protocols operational.", "ACTIVE");
+        }
+    }, 500);
+}
     </script>
 </body>
 </html>
