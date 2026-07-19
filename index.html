@@ -12,13 +12,30 @@
             box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
             text-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
         }
+        @keyframes pulseGlow {
+    0%, 100% { opacity: 0.15; transform: scale(1); }
+    50% { opacity: 0.28; transform: scale(1.02); }
+}
+
+.ambient-matrix-grid {
+    background-image: linear-gradient(rgba(16, 185, 129, 0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(16, 185, 129, 0.03) 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+
+.ambient-pulse {
+    animation: pulseGlow 8s ease-in-out infinite;
+}
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-slate-950">
 
     <div class="h-1 bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500 w-full"></div>
+    
 
     <main class="max-w-4xl mx-auto px-6 py-16 flex-grow flex flex-col justify-center">
+        <div class="fixed inset-0 ambient-matrix-grid pointer-events-none z-0"></div>
+<div class="fixed inset-0 bg-radial-gradient from-emerald-500/5 to-transparent ambient-pulse pointer-events-none z-0"></div>
         
         <header class="mb-8">
             <span class="text-xs font-semibold text-emerald-400 tracking-widest uppercase">Project Overview // v1.4.0</span>
@@ -83,6 +100,21 @@
                 document.getElementById('session-counter').innerText = "00040";
             });
     </script>
+<script>
+    // Create an immediate sound object from any minimal web source snippet or audio asset path
+    const mechanicalHoverSound = new Audio('https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg'); // Standard tiny beep sample URL placeholder
+    mechanicalHoverSound.volume = 0.15; // Kept atmospheric and quiet
 
+    // Target the Try Button
+    const callToActionButton = document.querySelector('.cyber-glow');
+    
+    if(callToActionButton) {
+        callToActionButton.addEventListener('mouseenter', () => {
+            // Reset position to trigger clip dynamically on rapid hovering adjustments
+            mechanicalHoverSound.currentTime = 0; 
+            mechanicalHoverSound.play().catch(e => console.log("Audio interactions require user page engagement prior to firing."));
+        });
+    }
+</script>
 </body>
 </html>
