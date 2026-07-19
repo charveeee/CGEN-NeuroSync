@@ -6,102 +6,152 @@
     <title>CGEN-NeuroSync Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+    <style>
+        /* Force WebGazer elements to look right inside our theme container */
+        #webgazerVideoFeed {
+            position: relative !important;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            transform: scaleX(-1); /* Mirror view for normal interaction */
+        }
+        #webgazerFaceOverlay, #webgazerFaceFeedbackBox {
+            border-color: #10b981 !important; /* Cyber green target lines */
+        }
+    </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans transition-all duration-1000" id="body-env">
 
     <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
         <div class="flex items-center space-x-3">
-            <div id="status-indicator" class="h-3 w-3 rounded-full bg-slate-600"></div>
+            <div id="status-indicator" class="h-3 w-3 rounded-full bg-slate-600 shadow-lg transition-all duration-300"></div>
             <h1 class="text-xl font-bold tracking-wider text-slate-100">CGEN-NEUROSYNC</h1>
         </div>
-        <div id="system-badge" class="bg-slate-800 text-slate-400 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest">
+        <div id="system-badge" class="bg-slate-800 text-slate-400 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest transition-all duration-300">
             Hardware Offline
         </div>
     </header>
-    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-    <div>
-        <h3 class="text-sm font-semibold text-slate-200 tracking-wide font-mono uppercase">Telemetry Source Selection</h3>
-        <p class="text-xs text-slate-400">Choose between a pre-loaded human EEG dataset or interactive webcam computer vision mapping.</p>
-    </div>
-    <div class="flex items-center bg-slate-950 p-1.5 rounded-lg border border-slate-800 self-start md:self-auto">
-        <button id="modeDatasetBtn" class="px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all bg-blue-600 text-white shadow-sm">
-            DATASET STREAM (PLAYBACK)
-        </button>
-        <button id="modeWebcamBtn" class="px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all text-slate-400 hover:text-slate-200">
-            WEBCAM CV PROXY (LIVE)
-        </button>
-    </div>
-</div>
 
-<div id="webcamContainer" class="hidden relative w-full max-w-xs mx-auto rounded-lg overflow-hidden border border-slate-800 mb-6 bg-slate-950 aspect-video">
-    <video id="webcamVideo" autoplay playsinline muted class="w-full h-full object-cover opacity-70"></video>
-    <div class="absolute top-2 left-2 bg-red-500/20 text-red-400 text-[10px] font-mono px-1.5 py-0.5 rounded border border-red-500/30 animate-pulse">
-        CV FEED ACTIVE
-    </div>
-</div>
-
-    <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <main class="max-w-7xl mx-auto p-6 space-y-6">
         
-        <div class="space-y-6 lg:col-span-1">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-                <h2 class="text-lg font-semibold mb-4 text-slate-300 border-b border-slate-800 pb-2">Hardware Connection</h2>
-                <p class="text-sm text-slate-400 mb-6">Connect to the virtual EEG headband to begin passive, non-explicit cognitive tracking.</p>
-                
-                <div class="flex items-center justify-between p-4 bg-slate-950 rounded-xl border border-slate-800">
-                    <span class="text-sm font-medium text-slate-300">EEG Headstream Link</span>
-                    <button id="stream-toggle" onclick="toggleHardwareStream()" class="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-700 transition-colors duration-300">
-                        <span id="toggle-thumb" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 translate-x-1"></span>
-                    </button>
-                </div>
-
-                <div id="simulation-state-box" class="mt-4 p-3 bg-slate-950 rounded-xl border border-slate-800/50 text-xs text-slate-500 text-center hidden">
-                    Current Simulated State: <span id="current-sim-state" class="font-semibold text-slate-300">Calibrating</span>
-                </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-xl">
+            <div>
+                <h3 class="text-sm font-semibold text-slate-200 tracking-wide font-mono uppercase">Telemetry Source Selection</h3>
+                <p class="text-xs text-slate-400">Choose between a pre-loaded human EEG dataset or interactive webcam computer vision mapping.</p>
             </div>
-
-            <div id="intervention-card" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl transition-all duration-500">
-                <h2 class="text-lg font-semibold mb-4 text-slate-300 border-b border-slate-800 pb-2">CGEN Action Logs</h2>
-                <div id="intervention-status" class="text-slate-400 text-sm space-y-3 min-h-[100px]">
-                    <p class="italic text-slate-500">Awaiting passive stream connection...</p>
-                </div>
+            <div class="flex items-center bg-slate-950 p-1.5 rounded-lg border border-slate-800 self-start md:self-auto">
+                <button id="modeDatasetBtn" class="px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all bg-blue-600 text-white shadow-sm">
+                    DATASET STREAM (PLAYBACK)
+                </button>
+                <button id="modeWebcamBtn" class="px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all text-slate-400 hover:text-slate-200">
+                    WEBCAM CV PROXY (LIVE)
+                </button>
             </div>
         </div>
 
-        <div class="lg:col-span-2 space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
-                    <a href="docs.html" class="text-xs text-slate-400 font-medium uppercase tracking-wider hover:text-blue-400 transition-colors flex justify-between items-center group">
-                        <span>Beta/Alpha Ratio</span>
-                        <span class="opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
-                    </a>
-                    <h3 id="metric-ratio" class="text-3xl font-bold mt-2 text-blue-400">0.00</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
+                        <a href="docs.html" class="text-xs text-slate-400 font-medium uppercase tracking-wider hover:text-blue-400 transition-colors flex justify-between items-center group">
+                            <span>Beta/Alpha Ratio</span>
+                            <span class="opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
+                        </a>
+                        <h3 id="metric-ratio" class="text-2xl font-bold mt-2 text-blue-400 transition-all">0.00</h3>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
+                        <a href="docs.html" class="text-xs text-slate-400 font-medium uppercase tracking-wider hover:text-teal-400 transition-colors flex justify-between items-center group">
+                            <span>Alpha (Calm)</span>
+                            <span class="opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
+                        </a>
+                        <h3 id="metric-alpha" class="text-2xl font-bold mt-2 text-teal-400 transition-all">0.0</h3>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
+                        <a href="docs.html" class="text-xs text-slate-400 font-medium uppercase tracking-wider hover:text-rose-400 transition-colors flex justify-between items-center group">
+                            <span>Beta (Focus)</span>
+                            <span class="opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
+                        </a>
+                        <h3 id="metric-beta" class="text-2xl font-bold mt-2 text-rose-400 transition-all">0.0</h3>
+                    </div>
                 </div>
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
-                    <a href="docs.html" class="text-xs text-slate-400 font-medium uppercase tracking-wider hover:text-teal-400 transition-colors flex justify-between items-center group">
-                        <span>Alpha Power (Calm)</span>
-                        <span class="opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
-                    </a>
-                    <h3 id="metric-alpha" class="text-3xl font-bold mt-2 text-teal-400">0.0</h3>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                    <h2 class="text-sm font-mono uppercase font-semibold mb-4 text-slate-400 tracking-wider">Continuous Biometric Telemetry</h2>
+                    <div class="h-64 w-full">
+                        <canvas id="ratioChart"></canvas>
+                    </div>
                 </div>
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
-                    <a href="docs.html" class="text-xs text-slate-400 font-medium uppercase tracking-wider hover:text-rose-400 transition-colors flex justify-between items-center group">
-                        <span>Beta Power (Focus)</span>
-                        <span class="opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
-                    </a>
-                    <h3 id="metric-beta" class="text-3xl font-bold mt-2 text-rose-400">0.0</h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                        <div>
+                            <h2 class="text-md font-semibold mb-2 text-slate-300 border-b border-slate-800 pb-2">Hardware Link</h2>
+                            <p class="text-xs text-slate-400 mb-6">Link your active telemetry stream selection to the main display interface node.</p>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-4 bg-slate-950 rounded-xl border border-slate-800">
+                            <span class="text-xs font-mono text-slate-400">Stream Connection</span>
+                            <button id="stream-toggle" onclick="toggleHardwareStream()" class="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-700 transition-colors duration-300">
+                                <span id="toggle-thumb" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 translate-x-1"></span>
+                            </button>
+                        </div>
+
+                        <div id="simulation-state-box" class="mt-4 p-2.5 bg-slate-950 rounded-xl border border-slate-800/50 text-[11px] text-slate-500 text-center hidden">
+                            Current Stream Core: <span id="current-sim-state" class="font-semibold text-slate-300">Calibrating</span>
+                        </div>
+                    </div>
+
+                    <div id="intervention-card" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col transition-all duration-500">
+                        <h2 class="text-md font-semibold mb-3 text-slate-300 border-b border-slate-800 pb-2">CGEN Action Logs</h2>
+                        <div id="intervention-status" class="text-slate-400 text-xs font-mono space-y-2 max-h-[160px] overflow-y-auto flex-grow scrollbar-thin">
+                            <p class="italic text-slate-500">[SYSTEM] Awaiting passive stream connection...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-                <h2 class="text-lg font-semibold mb-4 text-slate-300">Continuous Biometric Telemetry</h2>
-                <div class="h-80 w-full">
-                    <canvas id="ratioChart"></canvas>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col h-full min-h-[520px]">
+                <div class="mb-4">
+                    <h2 class="text-sm font-mono uppercase font-semibold text-slate-400 tracking-wider">Neural Vision Proxy / Gaze Tracking Matrix</h2>
+                    <p class="text-xs text-slate-500 mt-1">Locks biometric feedback onto user focus. Lingering fixations simulate Cognitive Block events.</p>
+                </div>
+                
+                <div id="videoFeedbackContainer" class="flex-grow w-full bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800 flex flex-col items-center justify-center p-4">
+                    <div id="webcamPlaceholderText" class="text-center space-y-2">
+                        <div class="w-12 h-12 rounded-full border border-dashed border-slate-700 flex items-center justify-center mx-auto animate-spin">⚙️</div>
+                        <p class="text-xs font-mono text-slate-500">Select WEBCAM CV MODE to engage matrix layout.</p>
+                    </div>
                 </div>
             </div>
+
         </div>
     </main>
 
     <script>
+        // --- System Globals ---
+        let currentMode = 'dataset'; 
+        let activeStream = false;
+        let streamInterval = null;
+        let tickCounter = 0;
+        
+        // Gaze Engine Variables
+        let focusTimer = 0;
+        let lastGazeX = 0;
+        let lastGazeY = 0;
+        let isCognitivelyBlocked = false;
+
+        // Mock PhysioNet Data playback baseline tracking
+        const physioNetData = [1.2, 1.5, 0.9, 1.4, 1.8, 2.1, 1.1, 0.7, 1.5, 2.3, 3.1, 2.5, 1.2, 0.8];
+        let datasetIndex = 0;
+
+        // UI Selections
+        const modeDatasetBtn = document.getElementById('modeDatasetBtn');
+        const modeWebcamBtn = document.getElementById('modeWebcamBtn');
+        const videoContainer = document.getElementById('videoFeedbackContainer');
+        const placeholderText = document.getElementById('webcamPlaceholderText');
+
         // --- Real-time Chart Configuration ---
         const ctx = document.getElementById('ratioChart').getContext('2d');
         const initialData = Array(20).fill(0);
@@ -118,7 +168,7 @@
                     backgroundColor: 'rgba(96, 165, 250, 0.05)',
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 4,
+                    pointRadius: 2,
                     pointBackgroundColor: '#3b82f6'
                 }]
             },
@@ -131,7 +181,7 @@
                         grid: { color: '#1e293b' },
                         ticks: { color: '#94a3b8' },
                         suggestMin: 0.0,
-                        suggestMax: 10.0
+                        suggestMax: 8.0
                     }
                 },
                 plugins: { legend: { display: false } }
@@ -144,195 +194,232 @@
             ratioChart.update();
         }
 
-        // --- Client-Side Local Data Processor (No Python Backend Needed!) ---
-        function calculateLocalMetrics(intensity) {
-            // Replicates the backend signal processing math entirely in JS
-            let baseAlpha = 1500.0;
-            let baseBeta = 3000.0;
+        // Helper Log Injector
+        function logMessage(text, type = "SYSTEM") {
+            const logsContainer = document.getElementById('intervention-status');
+            const timestamp = new Date().toTimeString().split(' ')[0];
+            let colorClass = "text-slate-400";
             
-            if (intensity > 2.0) { // High Stress Mode
-                baseAlpha = baseAlpha * 0.3 + (Math.random() * 150);
-                baseBeta = baseBeta * 1.4 + (Math.random() * 500);
-            } else if (intensity < 0.5) { // Flow State Mode
-                baseAlpha = baseAlpha * 1.6 + (Math.random() * 400);
-                baseBeta = baseBeta * 0.7 + (Math.random() * 200);
-            } else { // Baseline calibration
-                baseAlpha += (Math.random() - 0.5) * 200;
-                baseBeta += (Math.random() - 0.5) * 300;
+            if (type === "ERROR") colorClass = "text-rose-400 font-bold";
+            if (type === "ACTIVE") colorClass = "text-emerald-400";
+            if (type === "CRITICAL") colorClass = "text-rose-500 animate-pulse font-semibold";
+
+            const logHTML = `<div class="${colorClass}">[${timestamp}] [${type}] ${text}</div>`;
+            
+            // Clean out placeholder on first run
+            if(logsContainer.innerHTML.includes("Awaiting passive stream connection")) {
+                logsContainer.innerHTML = '';
             }
-
-            const ratio = baseBeta / baseAlpha;
-            const assistLevel = ratio > 4.5 ? Math.min(Math.floor(ratio - 3), 3) : 0;
-
-            // Instantly update interface nodes natively
-            document.getElementById('metric-ratio').innerText = ratio.toFixed(2);
-            document.getElementById('metric-alpha').innerText = baseAlpha.toFixed(1);
-            document.getElementById('metric-beta').innerText = baseBeta.toFixed(1);
             
-            addChartData(ratio);
-            updateDynamicInterface(assistLevel);
+            logsContainer.innerHTML += logHTML;
+            logsContainer.scrollTop = logsContainer.scrollHeight;
         }
 
-        function updateDynamicInterface(assistLevel) {
-            const body = document.getElementById('body-env');
-            const badge = document.getElementById('system-badge');
-            const interventionCard = document.getElementById('intervention-card');
-            const logs = document.getElementById('intervention-status');
+        // --- Mode Selector Event Logic ---
+        modeDatasetBtn.addEventListener('click', () => {
+            currentMode = 'dataset';
+            modeDatasetBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all bg-blue-600 text-white shadow-sm";
+            modeWebcamBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all text-slate-400 hover:text-slate-200";
+            
+            // Turn off camera matrix tracking gracefully
+            try {
+                webgazer.end();
+                const standardVideo = document.getElementById('webgazerVideoFeed');
+                if(standardVideo) standardVideo.remove();
+                const standardCanvas = document.getElementById('webgazerGazeDot');
+                if(standardCanvas) standardCanvas.remove();
+            } catch(e){}
 
-            if (assistLevel > 0) {
-                body.className = "bg-slate-950 text-slate-300 min-h-screen font-sans transition-all duration-1000 saturate-[0.8]";
-                badge.className = "bg-rose-500/10 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest animate-pulse";
-                badge.innerText = `CGEN ACTIVE: LEVEL ${assistLevel}`;
-                interventionCard.className = "bg-slate-900 border border-rose-500/30 rounded-2xl p-6 shadow-xl shadow-rose-950/10";
-                
-                logs.innerHTML = `
-                    <div class="flex items-start space-x-2 text-rose-400 font-medium">
-                        <span>[CGEN DISPATCH]</span>
-                        <span>High cognitive load threshold exceeded. Mitigating interface friction.</span>
-                    </div>
-                    <div class="pl-4 text-xs text-slate-400 space-y-1 mt-2">
-                        <p class="text-emerald-400">[ACTIVE] External desktop notifications suppressed</p>
-                        <p class="text-emerald-400">[ACTIVE] Secondary navigation panels hidden</p>
-                        <p class="text-emerald-400">[ACTIVE] Contextual workflow helper injected</p>
-                    </div>
-                `;
+            videoContainer.innerHTML = '';
+            videoContainer.appendChild(placeholderText);
+            placeholderText.classList.remove('hidden');
+            placeholderText.innerHTML = `<p class="text-xs font-mono text-slate-500">Dataset loop armed. Toggle Hardware Link to playback.</p>`;
+            
+            logMessage("Switched engine routing to static PhysioNet Human EEG Dataset repository.");
+        });
+
+        modeWebcamBtn.addEventListener('click', () => {
+            currentMode = 'webcam';
+            modeWebcamBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all bg-emerald-600 text-white shadow-sm";
+            modeDatasetBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all text-slate-400 hover:text-slate-200";
+            
+            placeholderText.innerHTML = `
+                <div class="w-8 h-8 rounded-full border-2 border-t-emerald-500 border-slate-800 animate-spin mx-auto mb-2"></div>
+                <p class="text-xs font-mono text-emerald-400 animate-pulse">Requesting local CV hardware tokens...</p>
+            `;
+            
+            if(activeStream) {
+                startWebcamEyeTracking();
             } else {
-                body.className = "bg-slate-950 text-slate-100 min-h-screen font-sans transition-all duration-1000";
-                badge.className = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest";
-                badge.innerText = "System Online";
-                interventionCard.className = "bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl";
-                
-                logs.innerHTML = `
-                    <div class="flex items-start space-x-2 text-emerald-400 font-medium">
-                        <span>[CGEN MONITORING]</span>
-                        <span>User baseline indicates continuous focused flow state.</span>
-                    </div>
-                    <p class="text-xs text-slate-500 pl-4 mt-1">Primary application resources maximized. Active workspace disruption blocks armed.</p>
-                `;
+                logMessage("Webcam framework armed. Toggle the 'Hardware Link' switch to activate data tracking.", "ACTIVE");
             }
-        }
+        });
 
-        // --- Passive Streaming Simulation State Loop ---
-        let streamInterval = null;
-        let activeStream = false;
-        let tickCounter = 0;
-
+        // --- Hardware Link State Toggle ---
         function toggleHardwareStream() {
             const toggle = document.getElementById('stream-toggle');
             const thumb = document.getElementById('toggle-thumb');
             const indicator = document.getElementById('status-indicator');
             const badge = document.getElementById('system-badge');
             const stateBox = document.getElementById('simulation-state-box');
-            const logs = document.getElementById('intervention-status');
 
             activeStream = !activeStream;
 
             if (activeStream) {
                 toggle.className = "relative inline-flex h-6 w-11 items-center rounded-full bg-emerald-600 transition-colors duration-300";
                 thumb.className = "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 translate-x-6";
-                indicator.className = "h-3 w-3 rounded-full bg-emerald-500 animate-pulse";
+                indicator.className = "h-3 w-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]";
                 badge.className = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest";
                 badge.innerText = "System Online";
                 stateBox.classList.remove('hidden');
 
                 tickCounter = 0;
-                runPassiveDaemon();
-                streamInterval = setInterval(runPassiveDaemon, 2000);
+                logMessage("Telemetry pipeline operational. Handshake confirmed.", "ACTIVE");
+                
+                if (currentMode === 'webcam') {
+                    startWebcamEyeTracking();
+                }
+
+                runDataProcessorDaemon();
+                streamInterval = setInterval(runDataProcessorDaemon, 1500);
             } else {
                 toggle.className = "relative inline-flex h-6 w-11 items-center rounded-full bg-slate-700 transition-colors duration-300";
                 thumb.className = "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 translate-x-1";
-                indicator.className = "h-3 w-3 rounded-full bg-slate-600";
+                indicator.className = "h-3 w-3 rounded-full bg-slate-600 shadow-none";
                 badge.className = "bg-slate-800 text-slate-400 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest";
                 badge.innerText = "Hardware Offline";
                 stateBox.classList.add('hidden');
-                logs.innerHTML = `<p class="italic text-slate-500">Awaiting passive stream connection...</p>`;
+                
+                logMessage("Pipeline structural shutdown completed. Safe line break initialization.");
 
                 clearInterval(streamInterval);
+                try { webgazer.end(); } catch(e){}
             }
         }
 
-        function runPassiveDaemon() {
+        // --- Core Metric Processing Core ---
+        function runDataProcessorDaemon() {
             tickCounter++;
-            let intensity = 1.0; 
-            let stateLabel = "Calibrating";
+            let inputIntensity = 1.0;
+            let displayLabel = "Calibrating";
 
-            if (tickCounter <= 5) {
-                intensity = 1.0;
-                stateLabel = "Calibrating (Baseline)";
-            } else if (tickCounter > 5 && tickCounter <= 12) {
-                intensity = 0.2;
-                stateLabel = "Deep Flow State";
-            } else if (tickCounter > 12 && tickCounter <= 20) {
-                intensity = 3.5;
-                stateLabel = "High Cognitive Stress";
+            if (isCognitivelyBlocked) {
+                inputIntensity = 5.0; // Force extreme mathematical stress simulation
+                displayLabel = "COGNITIVE LOCK DETECTED";
+            } else if (currentMode === 'dataset') {
+                // Read from human sample array values
+                inputIntensity = physioNetData[datasetIndex % physioNetData.length];
+                datasetIndex++;
+                displayLabel = `PhysioNet Stream [Idx: ${datasetIndex}]`;
             } else {
-                tickCounter = 0;
+                // Pure interactive webcam focus idle waves
+                inputIntensity = 0.8 + (Math.sin(Date.now() * 0.002) * 0.4);
+                displayLabel = "Gaze Matrix Live Parsing";
             }
 
-            document.getElementById('current-sim-state').innerText = stateLabel;
-            calculateLocalMetrics(intensity);
+            document.getElementById('current-sim-state').innerText = displayLabel;
+            calculateLocalMetrics(inputIntensity);
         }
-        // Mode UI Buttons
-const modeDatasetBtn = document.getElementById('modeDatasetBtn');
-const modeWebcamBtn = document.getElementById('modeWebcamBtn');
-const webcamContainer = document.getElementById('webcamContainer');
-const video = document.getElementById('webcamVideo');
 
-let currentMode = 'dataset'; // 'dataset' or 'webcam'
-let webcamStream = null;
+        function calculateLocalMetrics(intensity) {
+            let baseAlpha = 1500.0;
+            let baseBeta = 3000.0;
+            
+            if (intensity >= 4.5) { // Cognitively Blocked Flatline Warp
+                baseAlpha = 400.0 + (Math.random() * 30);
+                baseBeta = 3100.0 + (Math.random() * 80);
+            } else if (intensity > 2.0) { // High stress profile
+                baseAlpha = baseAlpha * 0.4 + (Math.random() * 150);
+                baseBeta = baseBeta * 1.3 + (Math.random() * 400);
+            } else if (intensity < 0.6) { // Flow state profile
+                baseAlpha = baseAlpha * 1.5 + (Math.random() * 300);
+                baseBeta = baseBeta * 0.6 + (Math.random() * 100);
+            } else { // Neutral baseline
+                baseAlpha += (Math.random() - 0.5) * 100;
+                baseBeta += (Math.random() - 0.5) * 200;
+            }
 
-// Mock PhysioNet EEG Dataset array (microvolts over time to simulate a real file playback)
-const physioNetData = [12.4, 15.1, 8.9, -3.2, -8.7, -1.2, 5.4, 14.8, 22.1, 10.3, -4.1, -12.6, -2.1, 9.8];
-let datasetIndex = 0;
+            const calculatedRatio = baseBeta / baseAlpha;
+            const interventionLevel = calculatedRatio > 4.5 ? Math.min(Math.floor(calculatedRatio - 3), 3) : 0;
 
-// Switch to Dataset Mode
-modeDatasetBtn.addEventListener('click', () => {
-    currentMode = 'dataset';
-    modeDatasetBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all bg-blue-600 text-white shadow-sm";
-    modeWebcamBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all text-slate-400 hover:text-slate-200";
-    
-    // Turn off webcam if active
-    webcamContainer.classList.add('hidden');
-    if (webcamStream) {
-        webcamStream.getTracks().forEach(track => track.stop());
-    }
-    appendLog("Switched source to PhysioNet EEG Dataset Stream [Playback Active].");
-});
+            // Render calculations inside document UI elements
+            document.getElementById('metric-ratio').innerText = calculatedRatio.toFixed(2);
+            document.getElementById('metric-alpha').innerText = baseAlpha.toFixed(1);
+            document.getElementById('metric-beta').innerText = baseBeta.toFixed(1);
+            
+            addChartData(calculatedRatio);
+            updateVisualEnvironment(interventionLevel);
+        }
 
-// Switch to Webcam Mode
-modeWebcamBtn.addEventListener('click', async () => {
-    currentMode = 'webcam';
-    modeWebcamBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all bg-emerald-600 text-white shadow-sm";
-    modeDatasetBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all text-slate-400 hover:text-slate-200";
-    
-    appendLog("Initializing computer vision matrix via hardware camera proxy...");
-    
-    try {
-        // Request browser webcam access natively
-        webcamStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
-        video.srcObject = webcamStream;
-        webcamContainer.classList.remove('hidden');
-        appendLog("Webcam proxy online. Mapping facial contrast/motion differentials to biometric calculations.");
-    } catch (err) {
-        appendLog("[ERROR] Camera access denied or unavailable. Falling back to simulated signals.");
-        console.error("Camera error:", err);
-    }
-});
+        function updateVisualEnvironment(level) {
+            const body = document.getElementById('body-env');
+            const badge = document.getElementById('system-badge');
+            const card = document.getElementById('intervention-card');
 
-// Modify your Canvas Waveform and Metrics loops to check "currentMode":
-function getNextTelemetryValue() {
-    if (currentMode === 'dataset') {
-        // Loop through the fixed array data
-        const val = physioNetData[datasetIndex % physioNetData.length];
-        datasetIndex++;
-        return val + (Math.random() * 2 - 1); // Add minimal baseline noise
-    } else {
-        // Mode: Webcam CV Proxy
-        // To build a pure lightweight proxy, we measure lighting variance/movement using canvas analysis, 
-        // or tie it to the camera active state using quick dynamic mathematical frequencies!
-        return Math.sin(Date.now() * 0.01) * 15 + (Math.random() * 5);
-    }
-}
+            if (isCognitivelyBlocked) {
+                body.className = "bg-slate-950 text-slate-300 min-h-screen font-sans transition-all duration-1000 saturate-[0.5]";
+                badge.className = "bg-rose-600 text-white border border-rose-500 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest animate-pulse";
+                badge.innerText = "CRITICAL: COGNITIVELY BLOCKED";
+                card.className = "bg-slate-900 border border-rose-600 rounded-2xl p-6 shadow-xl shadow-rose-950/20";
+                return;
+            }
+
+            if (level > 0) {
+                body.className = "bg-slate-950 text-slate-300 min-h-screen font-sans transition-all duration-1000 saturate-[0.8]";
+                badge.className = "bg-rose-500/10 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest animate-pulse";
+                badge.innerText = `CGEN ADJUSTING: LEVEL ${level}`;
+                card.className = "bg-slate-900 border border-rose-500/30 rounded-2xl p-6 shadow-xl shadow-rose-950/10";
+            } else {
+                body.className = "bg-slate-950 text-slate-100 min-h-screen font-sans transition-all duration-1000";
+                badge.className = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest";
+                badge.innerText = "System Online";
+                card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl";
+            }
+        }
+
+        // --- Native Computer Vision Gaze Listener (WebGazer) ---
+        async function startWebcamEyeTracking() {
+            logMessage("Spawning local CV telemetry framework matrices...", "ACTIVE");
+
+            webgazer.setGazeListener(function(data, elapsedTime) {
+                if (data == null || !activeStream || currentMode !== 'webcam') return;
+
+                let currentX = data.x; 
+                let currentY = data.y;
+
+                // Calculate vector shift radius from previous coordinates
+                let shiftDelta = Math.sqrt(Math.pow(currentX - lastGazeX, 2) + Math.pow(currentY - lastGazeY, 2));
+                
+                if (shiftDelta < 50) { 
+                    // Eyes are hovering inside structural zone boundaries
+                    focusTimer += 150; 
+                    
+                    if (focusTimer > 3000 && !isCognitivelyBlocked) {
+                        isCognitivelyBlocked = true;
+                        logMessage("Fixated ocular tracking path identified. Initializing cognitive lockout.", "CRITICAL");
+                    }
+                } else {
+                    focusTimer = 0; // Gaze shifted, reset timer thresholds
+                    if (isCognitivelyBlocked) {
+                        isCognitivelyBlocked = false;
+                        logMessage("Saccadic visual unlock tracked. Re-stabilizing cognitive load metrics.", "ACTIVE");
+                    }
+                }
+
+                lastGazeX = currentX;
+                lastGazeY = currentY;
+            }).begin();
+
+            // Intercept WebGazer video output and insert into split pane container
+            setTimeout(() => {
+                const nativeVideo = document.getElementById('webgazerVideoFeed');
+                if (nativeVideo && videoContainer) {
+                    placeholderText.classList.add('hidden');
+                    videoContainer.appendChild(nativeVideo);
+                    logMessage("Webcam matrix synchronized. Gaze calibration protocols operational.", "ACTIVE");
+                }
+            }, 1800);
+        }
     </script>
 </body>
 </html>
