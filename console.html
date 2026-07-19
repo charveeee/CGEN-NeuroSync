@@ -73,9 +73,8 @@
 
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
                 <h2 class="text-lg font-semibold mb-4 text-slate-300">Continuous Biometric Telemetry</h2>
-                <div class="w-full bg-slate-950/40 rounded-lg p-4 border border-slate-800 relative h-40 overflow-hidden">
-                    <canvas id="telemetryCanvas" class="absolute inset-0 w-full h-full opacity-60"></canvas>
-                    <div></div>
+                <div class="h-80 w-full">
+                    <canvas id="ratioChart"></canvas>
                 </div>
             </div>
         </div>
@@ -253,125 +252,5 @@
             calculateLocalMetrics(intensity);
         }
     </script>
-    <script>
-    // Elements Selection
-    const connectBtn = document.getElementById('connectBtn'); // Replace with your toggle/button ID if named differently
-    const statusText = document.getElementById('statusText'); // Replace with your status container ID
-    const logBox = document.getElementById('logBox');         // Replace with your log text area/div ID
-    const canvas = document.getElementById('telemetryCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    // Dynamic Metric Targets (Adjust IDs if they vary)
-    const ratioValueEl = document.getElementById('ratioValue');
-    const powerValueEl = document.getElementById('powerValue');
-
-    let isConnected = false;
-    let logInterval = null;
-    let metricInterval = null;
-    let animationFrameId = null;
-    let waveOffset = 0;
-
-    // Resizing Canvas relative to container size
-    function resizeCanvas() {
-        canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = canvas.parentElement.clientHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    // 1. Interactive Connection Toggle
-    connectBtn.addEventListener('click', () => {
-        isConnected = !isConnected;
-        
-        if (isConnected) {
-            // Transform UI to Live Active Mode
-            connectBtn.innerText = "DISCONNECT STREAM";
-            connectBtn.classList.add('bg-emerald-500/20', 'text-emerald-400');
-            statusText.innerText = "ONLINE / SIMULATED ACTIVE";
-            statusText.className = "text-emerald-400 font-mono tracking-wider animate-pulse";
-            
-            // Start components
-            appendLog("Synaptic handshake established successfully.");
-            startSimulations();
-        } else {
-            // Return to Idle Offline state
-            connectBtn.innerText = "CONNECT EEG HEADSTREAM";
-            connectBtn.classList.remove('bg-emerald-500/20', 'text-emerald-400');
-            statusText.innerText = "HARDWARE OFFLINE";
-            statusText.className = "text-amber-500 font-mono tracking-wider";
-            
-            stopSimulations();
-            appendLog("Session ended. Telemetry connection dropped.");
-        }
-    });
-
-    // 2. Automated Action Logs Generator
-    const simulatedLogs = [
-        "Alpha wave telemetry streaming active at 250Hz...",
-        "Prefrontal cortex node calibration baseline balanced.",
-        "Synchronizing bilateral hemispheric microvolt differentials...",
-        "Signal integrity stable. SNR ratio: 42.1 dB.",
-        "Burst activity detected in occipital beta ranges.",
-        "Cognitive workload buffer optimized at 14% utilization."
-    ];
-
-    function appendLog(text) {
-        const timestamp = new Date().toTimeString().split(' ')[0];
-        logBox.innerHTML += `[${timestamp}] ${text}\n`;
-        logBox.scrollTop = logBox.scrollHeight; // Auto scroll logs down
-    }
-
-    function startSimulations() {
-        // Logs Generator Loop
-        logInterval = setInterval(() => {
-            const randomLog = simulatedLogs[Math.floor(Math.random() * simulatedLogs.length)];
-            appendLog(randomLog);
-        }, 3500);
-
-        // Live Changing Metrics Fluctuations
-        metricInterval = setInterval(() => {
-            if(ratioValueEl) {
-                // Fluctuates around a standard 1.25 ratio
-                ratioValueEl.innerText = (1.1 + Math.random() * 0.3).toFixed(2);
-            }
-            if(powerValueEl) {
-                // Fluctuates power levels dynamically
-                powerValueEl.innerText = (18.5 + Math.random() * 4).toFixed(1) + " μV²";
-            }
-        }, 1200);
-
-        // Trigger Canvas Telemetry Loop
-        drawWaveform();
-    }
-
-    function stopSimulations() {
-        clearInterval(logInterval);
-        clearInterval(metricInterval);
-        cancelAnimationFrame(animationFrameId);
-        // Clear canvas line
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    // 3. Canvas Waveform Generator
-    function drawWaveform() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.beginPath();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = '#10b981'; // Cyber-emerald green wave tint
-        
-        for (let x = 0; x < canvas.width; x++) {
-            // Formula creating composite noise lines looking like raw neural telemetry
-            const y = canvas.height / 2 + 
-                      Math.sin(x * 0.03 + waveOffset) * 20 + 
-                      Math.sin(x * 0.08 + waveOffset * 1.5) * 8;
-            if (x === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        
-        ctx.stroke();
-        waveOffset += 0.05; // Telemetry scroll movement speed
-        animationFrameId = requestAnimationFrame(drawWaveform);
-    }
-</script>
 </body>
 </html>
