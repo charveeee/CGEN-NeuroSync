@@ -418,14 +418,13 @@
         lastGazeY = currentY;
     });
 
-    // Fire the engine initialization sequence
-    webgazer.begin()
-    .then(() => {
+// Fire the engine initialization sequence cleanly
+    try {
+        webgazer.begin();
         logMessage("Webgazer engine components generated. Awaiting hardware signal...", "ACTIVE");
-    })
-    .catch(err => {
+    } catch (err) {
         logMessage("Hardware processing access fault: " + err.message, "ERROR");
-    });
+    }
 
     // Proactively poll the Document Object Model for either WebGazer's native video feed or any standard camera stream
     const videoCheckInterval = setInterval(() => {
