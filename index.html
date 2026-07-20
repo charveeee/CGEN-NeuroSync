@@ -81,7 +81,7 @@
     </footer>
 
     <script>
-        // Counter logic specifically for the landing page
+        
         fetch('https://countapi.mileshilliard.com/api/v1/hit/cgen_neurosync_visualizer_initializations')
             .then(res => res.json())
             .then(data => {
@@ -94,16 +94,16 @@
             });
     </script>
 <script>
-    // Create an immediate sound object from any minimal web source snippet or audio asset path
+    
     const mechanicalHoverSound = new Audio('https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg'); // Standard tiny beep sample URL placeholder
-    mechanicalHoverSound.volume = 0.15; // Kept atmospheric and quiet
+    mechanicalHoverSound.volume = 0.15; 
 
-    // Target the Try Button
+    
     const callToActionButton = document.querySelector('.cyber-glow');
     
     if(callToActionButton) {
         callToActionButton.addEventListener('mouseenter', () => {
-            // Reset position to trigger clip dynamically on rapid hovering adjustments
+            
             mechanicalHoverSound.currentTime = 0; 
             mechanicalHoverSound.play().catch(e => console.log("Audio interactions require user page engagement prior to firing."));
         });

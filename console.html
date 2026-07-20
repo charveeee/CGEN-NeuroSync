@@ -17,7 +17,7 @@
             transform: scaleX(-1); /* Mirror view for normal interaction */
         }
         #webgazerFaceOverlay, #webgazerFaceFeedbackBox {
-            border-color: #10b981 !important; /* Cyber green target lines */
+            border-color: #10b981 !important; 
         }
     </style>
 </head>
@@ -152,7 +152,7 @@
         const videoContainer = document.getElementById('videoFeedbackContainer');
         const placeholderText = document.getElementById('webcamPlaceholderText');
 
-        // --- Real-time Chart Configuration ---
+        
         const ctx = document.getElementById('ratioChart').getContext('2d');
         const initialData = Array(20).fill(0);
         
@@ -194,7 +194,7 @@
             ratioChart.update();
         }
 
-        // Helper Log Injector
+        
       function logMessage(text, type = "SYSTEM", details = []) {
             const logsContainer = document.getElementById('intervention-status');
             const timestamp = new Date().toTimeString().split(' ')[0];
@@ -205,7 +205,7 @@
     if (type === "CRITICAL") colorClass = "text-rose-500 animate-pulse font-semibold";
     if (type === "MONITORING") colorClass = "text-emerald-400 font-medium";
 
-    // Build sub-detail lines if provided
+    
     let detailsHTML = '';
     if (details.length > 0) {
         detailsHTML = `<div class="pl-4 text-xs text-slate-400 space-y-1 mt-1">`;
@@ -226,7 +226,7 @@
         </div>
     `;
 
-    // Clear placeholder on first active message
+    
     if (logsContainer.innerHTML.includes("Awaiting passive stream connection")) {
         logsContainer.innerHTML = '';
     }
@@ -235,13 +235,13 @@
     logsContainer.scrollTop = logsContainer.scrollHeight;
 }
 
-        // --- Mode Selector Event Logic ---
+        
         modeDatasetBtn.addEventListener('click', () => {
             currentMode = 'dataset';
             modeDatasetBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all bg-blue-600 text-white shadow-sm";
             modeWebcamBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all text-slate-400 hover:text-slate-200";
             
-            // Turn off camera matrix tracking gracefully
+           
             try {
                 webgazer.end();
                 const standardVideo = document.getElementById('webgazerVideoFeed');
@@ -275,7 +275,7 @@
             }
         });
 
-        // --- Hardware Link State Toggle ---
+        
         function toggleHardwareStream() {
             const toggle = document.getElementById('stream-toggle');
             const thumb = document.getElementById('toggle-thumb');
@@ -295,14 +295,14 @@
 
         logMessage("Telemetry pipeline operational.", "ACTIVE");
         
-        // ADD THIS CHECK HERE: Force-launch tracking if switch is flipped while in webcam mode
+       
         if (currentMode === 'webcam') {
             startWebcamEyeTracking();
         }
 
         runDataProcessorDaemon();
         streamInterval = setInterval(runDataProcessorDaemon, 1500);
-    // Inside toggleHardwareStream() under the 'else' block:
+    
 } else {
     toggle.className = "relative inline-flex h-6 w-11 items-center rounded-full bg-slate-700 transition-colors duration-300";
     thumb.className = "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 translate-x-1";
@@ -311,7 +311,7 @@
     badge.innerText = "Hardware Offline";
     stateBox.classList.add('hidden');
 
-    // Reset logs to initial state
+    
     document.getElementById('intervention-status').innerHTML = `<p class="italic text-slate-500">[SYSTEM] Awaiting passive stream connection...</p>`;
 
     clearInterval(streamInterval);
@@ -319,7 +319,7 @@
 }
 }
 
-        // --- Core Metric Processing Core ---
+        
         function runDataProcessorDaemon() {
             tickCounter++;
             let inputIntensity = 1.0;
@@ -329,12 +329,12 @@
                 inputIntensity = 5.0; // Force extreme mathematical stress simulation
                 displayLabel = "COGNITIVE LOCK DETECTED";
             } else if (currentMode === 'dataset') {
-                // Read from human sample array values
+                
                 inputIntensity = physioNetData[datasetIndex % physioNetData.length];
                 datasetIndex++;
                 displayLabel = `PhysioNet Stream [Idx: ${datasetIndex}]`;
             } else {
-                // Pure interactive webcam focus idle waves
+                
                 inputIntensity = 0.8 + (Math.sin(Date.now() * 0.002) * 0.4);
                 displayLabel = "Gaze Matrix Live Parsing";
             }
@@ -384,7 +384,7 @@
         badge.innerText = "CRITICAL: COGNITIVELY BLOCKED";
         card.className = "bg-slate-900 border border-rose-600 rounded-2xl p-6 shadow-xl shadow-rose-950/20";
         
-        // Push cognitive block log with details
+        
         logMessage("Cognitive lockout activated. Restructuring UI layer environment.", "CRITICAL", [
             "External desktop notifications suppressed",
             "Secondary navigation panels hidden",
@@ -408,7 +408,7 @@
     }
 }
 
-        // --- Native Computer Vision Gaze Listener (WebGazer) ---
+        
         async function startWebcamEyeTracking() {
     logMessage("Spawning local CV telemetry framework matrices...", "ACTIVE");
 
@@ -416,9 +416,9 @@
         webgazer.end(); 
     } catch(e){}
 
-    // Explicitly configure webgazer layout constraints before initializing
+    
     webgazer.params.showVideoPreview = true;
-    webgazer.params.showCanvasPreview = false; // Prevents crashing on missing dynamic tracking pixels
+    webgazer.params.showCanvasPreview = false; 
     webgazer.params.showFaceOverlay = false;
     webgazer.params.showFaceFeedbackBox = false;
 
@@ -448,8 +448,7 @@
         lastGazeY = currentY;
     });
 
-    // Fire the engine initialization sequence
-// Fire the engine initialization sequence cleanly
+    
     try {
         webgazer.begin();
         logMessage("Webgazer engine components generated. Awaiting hardware signal...", "ACTIVE");
@@ -457,16 +456,16 @@
         logMessage("Hardware processing access fault: " + err.message, "ERROR");
     }
 
-    // Proactively poll the Document Object Model for either WebGazer's native video feed or any standard camera stream
+    
     const videoCheckInterval = setInterval(() => {
-        // WebGazer creates a video tag with this specific ID automatically
+        
         const nativeVideo = document.getElementById('webgazerVideoFeed') || document.querySelector('video');
         
         if (nativeVideo && videoContainer) {
-            clearInterval(videoCheckInterval); // Stop tracking loop once found
+            clearInterval(videoCheckInterval)
             placeholderText.classList.add('hidden');
             
-            // Clean out styling overhead constraints to snap nicely to Tailwind's grid panel
+            
             nativeVideo.id = 'webgazerVideoFeed';
             nativeVideo.style.position = 'relative';
             nativeVideo.style.width = '100%';
