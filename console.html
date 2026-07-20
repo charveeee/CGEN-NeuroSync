@@ -195,25 +195,45 @@
         }
 
         // Helper Log Injector
-        function logMessage(text, type = "SYSTEM") {
+      function logMessage(text, type = "SYSTEM", details = []) {
             const logsContainer = document.getElementById('intervention-status');
             const timestamp = new Date().toTimeString().split(' ')[0];
-            let colorClass = "text-slate-400";
-            
-            if (type === "ERROR") colorClass = "text-rose-400 font-bold";
-            if (type === "ACTIVE") colorClass = "text-emerald-400";
-            if (type === "CRITICAL") colorClass = "text-rose-500 animate-pulse font-semibold";
+    
+    let colorClass = "text-slate-400";
+    if (type === "ERROR") colorClass = "text-rose-400 font-bold";
+    if (type === "ACTIVE") colorClass = "text-emerald-400 font-medium";
+    if (type === "CRITICAL") colorClass = "text-rose-500 animate-pulse font-semibold";
+    if (type === "MONITORING") colorClass = "text-emerald-400 font-medium";
 
-            const logHTML = `<div class="${colorClass}">[${timestamp}] [${type}] ${text}</div>`;
-            
-            // Clean out placeholder on first run
-            if(logsContainer.innerHTML.includes("Awaiting passive stream connection")) {
-                logsContainer.innerHTML = '';
-            }
-            
-            logsContainer.innerHTML += logHTML;
-            logsContainer.scrollTop = logsContainer.scrollHeight;
-        }
+    // Build sub-detail lines if provided
+    let detailsHTML = '';
+    if (details.length > 0) {
+        detailsHTML = `<div class="pl-4 text-xs text-slate-400 space-y-1 mt-1">`;
+        details.forEach(item => {
+            detailsHTML += `<p class="text-emerald-400">[ACTIVE] ${item}</p>`;
+        });
+        detailsHTML += `</div>`;
+    }
+
+    const logHTML = `
+        <div class="mb-2">
+            <div class="${colorClass} flex items-start space-x-1">
+                <span>[${timestamp}]</span>
+                <span>[${type}]</span>
+                <span>${text}</span>
+            </div>
+            ${detailsHTML}
+        </div>
+    `;
+
+    // Clear placeholder on first active message
+    if (logsContainer.innerHTML.includes("Awaiting passive stream connection")) {
+        logsContainer.innerHTML = '';
+    }
+
+    logsContainer.innerHTML += logHTML;
+    logsContainer.scrollTop = logsContainer.scrollHeight;
+}
 
         // --- Mode Selector Event Logic ---
         modeDatasetBtn.addEventListener('click', () => {
@@ -273,7 +293,7 @@
         badge.innerText = "System Online";
         stateBox.classList.remove('hidden');
 
-        logMessage("Telemetry pipeline operational. Handshake confirmed.", "ACTIVE");
+        logMessage("Telemetry pipeline operational.", "ACTIVE");
         
         // ADD THIS CHECK HERE: Force-launch tracking if switch is flipped while in webcam mode
         if (currentMode === 'webcam') {
@@ -282,20 +302,21 @@
 
         runDataProcessorDaemon();
         streamInterval = setInterval(runDataProcessorDaemon, 1500);
-    } else {
-        // ... Keep your existing 'else' logic for shutting down the stream here ...
-        toggle.className = "relative inline-flex h-6 w-11 items-center rounded-full bg-slate-700 transition-colors duration-300";
-        thumb.className = "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 translate-x-1";
-        indicator.className = "h-3 w-3 rounded-full bg-slate-600 shadow-none";
-        badge.className = "bg-slate-800 text-slate-400 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest";
-        badge.innerText = "Hardware Offline";
-        stateBox.classList.add('hidden');
-        
-        logMessage("Pipeline structural shutdown completed. Safe line break initialization.");
+    // Inside toggleHardwareStream() under the 'else' block:
+} else {
+    toggle.className = "relative inline-flex h-6 w-11 items-center rounded-full bg-slate-700 transition-colors duration-300";
+    thumb.className = "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 translate-x-1";
+    indicator.className = "h-3 w-3 rounded-full bg-slate-600 shadow-none";
+    badge.className = "bg-slate-800 text-slate-400 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest";
+    badge.innerText = "Hardware Offline";
+    stateBox.classList.add('hidden');
 
-        clearInterval(streamInterval);
-        try { webgazer.end(); } catch(e){}
-    }
+    // Reset logs to initial state
+    document.getElementById('intervention-status').innerHTML = `<p class="italic text-slate-500">[SYSTEM] Awaiting passive stream connection...</p>`;
+
+    clearInterval(streamInterval);
+    try { webgazer.end(); } catch(e){}
+}
 }
 
         // --- Core Metric Processing Core ---
@@ -353,30 +374,39 @@
         }
 
         function updateVisualEnvironment(level) {
-            const body = document.getElementById('body-env');
-            const badge = document.getElementById('system-badge');
-            const card = document.getElementById('intervention-card');
+    const body = document.getElementById('body-env');
+    const badge = document.getElementById('system-badge');
+    const card = document.getElementById('intervention-card');
 
-            if (isCognitivelyBlocked) {
-                body.className = "bg-slate-950 text-slate-300 min-h-screen font-sans transition-all duration-1000 saturate-[0.5]";
-                badge.className = "bg-rose-600 text-white border border-rose-500 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest animate-pulse";
-                badge.innerText = "CRITICAL: COGNITIVELY BLOCKED";
-                card.className = "bg-slate-900 border border-rose-600 rounded-2xl p-6 shadow-xl shadow-rose-950/20";
-                return;
-            }
+    if (isCognitivelyBlocked) {
+        body.className = "bg-slate-950 text-slate-300 min-h-screen font-sans transition-all duration-1000 saturate-[0.5]";
+        badge.className = "bg-rose-600 text-white border border-rose-500 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest animate-pulse";
+        badge.innerText = "CRITICAL: COGNITIVELY BLOCKED";
+        card.className = "bg-slate-900 border border-rose-600 rounded-2xl p-6 shadow-xl shadow-rose-950/20";
+        
+        // Push cognitive block log with details
+        logMessage("Cognitive lockout activated. Restructuring UI layer environment.", "CRITICAL", [
+            "External desktop notifications suppressed",
+            "Secondary navigation panels hidden",
+            "Contextual workflow helper injected"
+        ]);
+        return;
+    }
 
-            if (level > 0) {
-                body.className = "bg-slate-950 text-slate-300 min-h-screen font-sans transition-all duration-1000 saturate-[0.8]";
-                badge.className = "bg-rose-500/10 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest animate-pulse";
-                badge.innerText = `CGEN ADJUSTING: LEVEL ${level}`;
-                card.className = "bg-slate-900 border border-rose-500/30 rounded-2xl p-6 shadow-xl shadow-rose-950/10";
-            } else {
-                body.className = "bg-slate-950 text-slate-100 min-h-screen font-sans transition-all duration-1000";
-                badge.className = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest";
-                badge.innerText = "System Online";
-                card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl";
-            }
-        }
+    if (level > 0) {
+        body.className = "bg-slate-950 text-slate-300 min-h-screen font-sans transition-all duration-1000 saturate-[0.8]";
+        badge.className = "bg-rose-500/10 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest animate-pulse";
+        badge.innerText = `CGEN ADJUSTING: LEVEL ${level}`;
+        card.className = "bg-slate-900 border border-rose-500/30 rounded-2xl p-6 shadow-xl shadow-rose-950/10";
+        
+        logMessage(`CGEN Interventions initiated (Level ${level}). Adjusting workstation parameters.`, "ACTIVE");
+    } else {
+        body.className = "bg-slate-950 text-slate-100 min-h-screen font-sans transition-all duration-1000";
+        badge.className = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest";
+        badge.innerText = "System Online";
+        card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl";
+    }
+}
 
         // --- Native Computer Vision Gaze Listener (WebGazer) ---
         async function startWebcamEyeTracking() {
