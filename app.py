@@ -7,8 +7,6 @@ import numpy as np
 from scipy.signal import butter, lfilter
 from collections import deque
 
-# --- 1. BIOMETRIC PIPELINE ENGINES ---
-
 class SynapseSignalProcessor:
     def __init__(self, sampling_rate=250):
         self.sampling_rate = sampling_rate
@@ -92,8 +90,6 @@ class CGENEngine:
         self.assist_level = 0
         print("[CGEN ACTION] Dedicating peak processing resources to active workspace.")
 
-
-# --- 2. WEB API BACKEND ---
 
 app = FastAPI(title="CGEN-NeuroSync API")
 
