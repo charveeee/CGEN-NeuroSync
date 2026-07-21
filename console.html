@@ -466,9 +466,9 @@
 
     
     webgazer.params.showVideoPreview = true;
-    webgazer.params.showCanvasPreview = false; 
+    webgazer.params.showCanvasPreview = true; 
     webgazer.params.showFaceOverlay = false;
-    webgazer.params.showFaceFeedbackBox = false;
+    webgazer.params.showFaceFeedbackBox = true;
 
     webgazer.setGazeListener(function(data, elapsedTime) {
         if (data == null || !activeStream || currentMode !== 'webcam') return;
