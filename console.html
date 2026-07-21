@@ -130,23 +130,71 @@
     </main>
 
     <script>
-        // --- System Globals ---
         let currentMode = 'dataset'; 
         let activeStream = false;
         let streamInterval = null;
         let tickCounter = 0;
         
-        // Gaze Engine Variables
+       
         let focusTimer = 0;
         let lastGazeX = 0;
         let lastGazeY = 0;
         let isCognitivelyBlocked = false;
 
-        // Mock PhysioNet Data playback baseline tracking
-        const physioNetData = [1.2, 1.5, 0.9, 1.4, 1.8, 2.1, 1.1, 0.7, 1.5, 2.3, 3.1, 2.5, 1.2, 0.8];
+       
+        const physioNetData = [
+            //Making this as precise as possible with over 400 indeces 
+            //Random Shi at first lol 
+            1.5, 0.9, 1.4, 1.8, 2.1, 1.1, 0.7, 2.3, 3.1, 2.5, 1.2, 0.8, 1.02, 1.15, 0.98, 1.05, 1.22, 1.18, 0.95, 1.01, 
+            //Calm Baseline focus (~100 Indeces) 
+            1.12, 1.15, 1.08, 1.21, 1.19, 1.05, 0.98, 1.02, 1.14, 1.10,
+    1.06, 1.11, 1.18, 1.25, 1.13, 1.07, 0.99, 1.04, 1.12, 1.16,
+    1.20, 1.15, 1.09, 1.03, 1.14, 1.18, 1.10, 1.05, 1.12, 1.08,
+    0.97, 1.01, 1.15, 1.22, 1.17, 1.09, 1.04, 1.11, 1.16, 1.13,
+    1.08, 1.02, 1.14, 1.20, 1.12, 1.06, 0.98, 1.05, 1.11, 1.15,
+    1.19, 1.14, 1.07, 1.01, 1.13, 1.18, 1.10, 1.04, 1.09, 1.12,
+    0.96, 1.03, 1.16, 1.21, 1.15, 1.08, 1.02, 1.10, 1.17, 1.11,
+    1.05, 1.01, 1.13, 1.19, 1.11, 1.07, 0.99, 1.04, 1.12, 1.16,
+    1.21, 1.14, 1.08, 1.02, 1.15, 1.17, 1.09, 1.05, 1.11, 1.07,
+    0.98, 1.03, 1.14, 1.22, 1.16, 1.09, 1.03, 1.10, 1.15, 1.12,
+            //Gradual Fatigue buildup (~100 Indeces)  
+            0.85, 0.78, 0.72, 0.69, 0.75, 0.81, 0.74, 0.68, 0.71, 0.77,
+    0.83, 0.76, 0.70, 0.65, 0.73, 0.79, 0.71, 0.67, 0.74, 0.80,
+    0.75, 0.69, 0.64, 0.72, 0.78, 0.73, 0.66, 0.70, 0.76, 0.82,
+    0.74, 0.68, 0.63, 0.71, 0.77, 0.72, 0.67, 0.69, 0.75, 0.81,
+    0.76, 0.70, 0.64, 0.73, 0.79, 0.71, 0.66, 0.72, 0.78, 0.73,
+    0.67, 0.62, 0.70, 0.76, 0.82, 0.75, 0.69, 0.65, 0.71, 0.77,
+    0.72, 0.66, 0.73, 0.79, 0.74, 0.68, 0.63, 0.70, 0.76, 0.81,
+    0.75, 0.69, 0.64, 0.72, 0.78, 0.73, 0.67, 0.71, 0.77, 0.83,
+    0.76, 0.70, 0.65, 0.73, 0.79, 0.72, 0.66, 0.69, 0.75, 0.80,
+    0.74, 0.68, 0.63, 0.71, 0.77, 0.72, 0.67, 0.72, 0.78, 0.84,
+            //Cognitive Spike Overload (above 4.5) (~100 Indeces) 
+            1.45, 1.58, 1.72, 1.89, 2.05, 2.18, 2.32, 2.45, 2.61, 2.78,
+    2.92, 3.08, 3.15, 3.29, 3.42, 3.58, 3.65, 3.79, 3.91, 4.05,
+    3.88, 3.72, 3.85, 4.01, 4.15, 4.28, 4.35, 4.42, 4.38, 4.25,
+    4.12, 4.29, 4.41, 4.36, 4.22, 4.18, 4.31, 4.45, 4.39, 4.26,
+    4.15, 4.28, 4.40, 4.47, 4.32, 4.19, 4.25, 4.38, 4.44, 4.31,
+    4.18, 4.27, 4.39, 4.46, 4.33, 4.20, 4.28, 4.41, 4.48, 4.35,
+    4.21, 4.30, 4.42, 4.49, 4.36, 4.23, 4.29, 4.43, 4.46, 4.32,
+    4.19, 4.26, 4.38, 4.45, 4.33, 4.20, 4.27, 4.40, 4.47, 4.34,
+    4.22, 4.31, 4.43, 4.50, 4.38, 4.25, 4.32, 4.44, 4.48, 4.36,
+    4.23, 4.30, 4.41, 4.49, 4.37, 4.24, 4.33, 4.45, 4.51, 4.40,
+            //Recovery After execution (~100 Indeces) 
+            4.85, 5.12, 5.35, 5.20, 4.95, 4.78, 4.62, 4.35, 3.98, 3.62,
+    3.25, 2.90, 2.55, 2.20, 1.95, 1.72, 1.50, 1.35, 1.22, 1.15,
+    1.08, 1.02, 1.10, 1.16, 1.21, 1.14, 1.07, 1.01, 1.09, 1.15,
+    1.18, 1.12, 1.05, 0.99, 1.06, 1.12, 1.17, 1.10, 1.04, 0.98,
+    1.05, 1.11, 1.16, 1.09, 1.03, 0.97, 1.04, 1.10, 1.15, 1.08,
+    1.02, 0.96, 1.03, 1.09, 1.14, 1.07, 1.01, 0.95, 1.02, 1.08,
+    1.13, 1.06, 1.00, 0.94, 1.01, 1.07, 1.12, 1.05, 0.99, 0.93,
+    1.00, 1.06, 1.11, 1.04, 0.98, 0.92, 0.99, 1.05, 1.10, 1.03,
+    0.97, 0.91, 0.98, 1.04, 1.09, 1.02, 0.96, 0.90, 0.97, 1.03,
+    1.08, 1.01, 0.95, 0.89, 0.96, 1.02, 1.07, 1.00, 0.94, 1.05
+        
+        ];
         let datasetIndex = 0;
 
-        // UI Selections
+        
         const modeDatasetBtn = document.getElementById('modeDatasetBtn');
         const modeWebcamBtn = document.getElementById('modeWebcamBtn');
         const videoContainer = document.getElementById('videoFeedbackContainer');
@@ -326,13 +374,13 @@
             let displayLabel = "Calibrating";
 
             if (isCognitivelyBlocked) {
-                inputIntensity = 5.0; // Force extreme mathematical stress simulation
+                inputIntensity = 5.0; 
                 displayLabel = "COGNITIVE LOCK DETECTED";
             } else if (currentMode === 'dataset') {
                 
                 inputIntensity = physioNetData[datasetIndex % physioNetData.length];
                 datasetIndex++;
-                displayLabel = `PhysioNet Stream [Idx: ${datasetIndex}]`;
+                displayLabel = `PhysioNet Stream [Idx: ${(datasetIndex % physioNetData.length) + 1} / ${physioNetData.length}]`;
             } else {
                 
                 inputIntensity = 0.8 + (Math.sin(Date.now() * 0.002) * 0.4);
@@ -347,16 +395,16 @@
             let baseAlpha = 1500.0;
             let baseBeta = 3000.0;
             
-            if (intensity >= 4.5) { // Cognitively Blocked Flatline Warp
+            if (intensity >= 4.5) { 
                 baseAlpha = 400.0 + (Math.random() * 30);
                 baseBeta = 3100.0 + (Math.random() * 80);
-            } else if (intensity > 2.0) { // High stress profile
+            } else if (intensity > 2.0) { 
                 baseAlpha = baseAlpha * 0.4 + (Math.random() * 150);
                 baseBeta = baseBeta * 1.3 + (Math.random() * 400);
-            } else if (intensity < 0.6) { // Flow state profile
+            } else if (intensity < 0.6) { 
                 baseAlpha = baseAlpha * 1.5 + (Math.random() * 300);
                 baseBeta = baseBeta * 0.6 + (Math.random() * 100);
-            } else { // Neutral baseline
+            } else { 
                 baseAlpha += (Math.random() - 0.5) * 100;
                 baseBeta += (Math.random() - 0.5) * 200;
             }
@@ -364,7 +412,7 @@
             const calculatedRatio = baseBeta / baseAlpha;
             const interventionLevel = calculatedRatio > 4.5 ? Math.min(Math.floor(calculatedRatio - 3), 3) : 0;
 
-            // Render calculations inside document UI elements
+            
             document.getElementById('metric-ratio').innerText = calculatedRatio.toFixed(2);
             document.getElementById('metric-alpha').innerText = baseAlpha.toFixed(1);
             document.getElementById('metric-beta').innerText = baseBeta.toFixed(1);
