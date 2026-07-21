@@ -8,16 +8,16 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
     <style>
-        #webgazerVideoFeed,
-        #webgazerVideocanvas,
-        #webgazerFaceOverlayCanvas,
-        #webgazerFaceFeedbackBox {
-            position: fixed !important;
-            top: 20px !important;      
-            right: 20px !important;    
-            left: auto !important;     
-            z-index: 9999 !important;  
-    }
+        #webgazerVideoFeed {
+            position: relative !important;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            transform: scaleX(-1); 
+        }
+        #webgazerFaceOverlay, #webgazerFaceFeedbackBox {
+            border-color: #10b981 !important; 
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans transition-all duration-1000" id="body-env">
