@@ -54,14 +54,14 @@ class CGENEngine:
 
     def evaluate_and_intervene(self, features):
         if features is None:
-            print("[Axon Warning] Telemetry chunk discarded: High physical artifact noise detected.")
+            print("[CGEN Warning] Telemetry chunk discarded: High physical artifact noise detected.")
             return
 
         current_ratio = features["Beta_Alpha_Ratio"]
         
         if len(self.baseline_history) < 5:
             self.baseline_history.append(current_ratio)
-            print(f"[Axon Calibrating] Gathering user baseline... Current Ratio: {current_ratio:.2f}")
+            print(f"[CGEN Calibrating] Gathering user baseline... Current Ratio: {current_ratio:.2f}")
             return
 
         history_arr = np.array(self.baseline_history)
@@ -74,24 +74,24 @@ class CGENEngine:
         print(f"[Synapse Telemetry] Ratio: {current_ratio:.2f} | Baseline Avg: {mean_baseline:.2f} | Deviation: {z_score:.2f}")
 
         if z_score > 1.5:
-            print("\n[Axon Triggered] Elevated cognitive stress detected relative to personal baseline!")
+            print("\n[CGEN Triggered] Elevated cognitive stress detected relative to personal baseline!")
             self._deploy_cognitive_assist()
         elif z_score < -0.5:
-            print("\n[Axon Triggered] User baseline indicates a calm, focused flow state.")
+            print("\n[CGEN Triggered] User baseline indicates a calm, focused flow state.")
             self._lock_down_environment()
         else:
-            print("\n[Axon State] Cognitive load stable within nominal baseline bounds.")
+            print("\n[CGEN State] Cognitive load stable within nominal baseline bounds.")
 
     def _deploy_cognitive_assist(self):
         self.assist_level += 1
-        print("[Axon ACTION] Suppressing desktop alerts & simplifying interface clutter.")
+        print("[CGEN ACTION] Suppressing desktop alerts & simplifying interface clutter.")
 
     def _lock_down_environment(self):
         self.assist_level = 0
-        print("[Axon ACTION] Dedicating peak processing resources to active workspace.")
+        print("[CGEN ACTION] Dedicating peak processing resources to active workspace.")
 
 
-app = FastAPI(title="Axon Engine API")
+app = FastAPI(title="CGEN Engine API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -109,7 +109,7 @@ class EEGPayload(BaseModel):
 
 @app.get("/")
 def home():
-    return {"status": "Axon Engine Online", "version": "1.0.0-Beta"}
+    return {"status": "CGEN Engine Online", "version": "1.0.0-Beta"}
 
 @app.post("/analyze")
 async def analyze_stream(payload: EEGPayload):
@@ -133,5 +133,5 @@ async def analyze_stream(payload: EEGPayload):
     }
 
 if __name__ == "__main__":
-    print("\n[SYSTEM] Starting Axon Engine Web Server on http://127.0.0.1:8000")
+    print("\n[SYSTEM] Starting CGEN Engine Web Server on http://127.0.0.1:8000")
     uvicorn.run(app, host="127.0.0.1", port=8000)
