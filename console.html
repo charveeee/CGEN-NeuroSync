@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Axon Engine Dashboard</title>
+    <title>CGEN Engine Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
@@ -22,7 +22,7 @@
     <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
         <div class="flex items-center space-x-3">
             <div id="status-indicator" class="h-3 w-3 rounded-full bg-slate-600 shadow-lg transition-all duration-300"></div>
-            <h1 class="text-xl font-bold tracking-wider text-slate-100">Axon Engine</h1>
+            <h1 class="text-xl font-bold tracking-wider text-slate-100">CGEN Engine</h1>
         </div>
         <div id="system-badge" class="bg-slate-800 text-slate-400 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest transition-all duration-300">
             Hardware Offline
@@ -100,7 +100,7 @@
                     </div>
 
                     <div id="intervention-card" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col transition-all duration-500">
-                        <h2 class="text-md font-semibold mb-3 text-slate-300 border-b border-slate-800 pb-2">Axon Action Logs</h2>
+                        <h2 class="text-md font-semibold mb-3 text-slate-300 border-b border-slate-800 pb-2">CGEN Action Logs</h2>
                         <div id="intervention-status" class="text-slate-400 text-xs font-mono space-y-2 max-h-[160px] overflow-y-auto flex-grow scrollbar-thin">
                             <p class="italic text-slate-500">[SYSTEM] Awaiting passive stream connection...</p>
                         </div>
@@ -441,10 +441,10 @@
     if (level > 0) {
         body.className = "bg-slate-950 text-slate-300 min-h-screen font-sans transition-all duration-1000 saturate-[0.8]";
         badge.className = "bg-rose-500/10 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest animate-pulse";
-        badge.innerText = `Axon ADJUSTING: LEVEL ${level}`;
+        badge.innerText = `CGEN ADJUSTING: LEVEL ${level}`;
         card.className = "bg-slate-900 border border-rose-500/30 rounded-2xl p-6 shadow-xl shadow-rose-950/10";
         
-        logMessage(`Axon Interventions initiated (Level ${level}). Adjusting workstation parameters.`, "ACTIVE");
+        logMessage(`CGEN Interventions initiated (Level ${level}). Adjusting workstation parameters.`, "ACTIVE");
     } else {
         body.className = "bg-slate-950 text-slate-100 min-h-screen font-sans transition-all duration-1000";
         badge.className = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest";
