@@ -125,20 +125,22 @@
         </div>
     </main>
 
-    <script>
-        let currentMode = 'dataset'; 
-        let activeStream = false;
-        let streamInterval = null;
-        let tickCounter = 0;
+<script>
+    let currentMode = 'dataset'; 
+    let activeStream = false;
+    let streamInterval = null;
+    let tickCounter = 0;
 
-        let cameraStressScore = 1.0; 
-        let lastGazeX = 0;
-        let lastGazeY = 0;
-        let gazeHistory = [];
-        let isCognitivelyBlocked = false;
 
-       
-        const physioNetData = [
+    let cameraStressScore = 1.0; 
+    let lastGazeX = 0;
+    let lastGazeY = 0;
+    let gazeHistory = [];
+    let isCognitivelyBlocked = false;
+    let lastLoggedLevel = -1;
+
+
+   const physioNetData = [
             //Making this as precise as possible with over 400 indeces 
             //Random Shi at first lol 
             1.5, 0.9, 1.4, 1.8, 2.1, 1.1, 0.7, 2.3, 3.1, 2.5, 1.2, 0.8, 1.02, 1.15, 0.98, 1.05, 1.22, 1.18, 0.95, 1.01, 
@@ -191,17 +193,17 @@
         ];
         let datasetIndex = 0;
 
-        
-        const modeDatasetBtn = document.getElementById('modeDatasetBtn');
-        const modeWebcamBtn = document.getElementById('modeWebcamBtn');
-        const videoContainer = document.getElementById('videoFeedbackContainer');
-        const placeholderText = document.getElementById('webcamPlaceholderText');
 
-        
-        const ctx = document.getElementById('ratioChart').getContext('2d');
-        const initialData = Array(20).fill(0);
-        
-        const ratioChart = new Chart(ctx, {
+
+    const modeDatasetBtn = document.getElementById('modeDatasetBtn');
+    const modeWebcamBtn = document.getElementById('modeWebcamBtn');
+    const videoContainer = document.getElementById('videoFeedbackContainer');
+    const placeholderText = document.getElementById('webcamPlaceholderText');
+
+    const ctx = document.getElementById('ratioChart').getContext('2d');
+    const initialData = Array(20).fill(0);
+    
+    const ratioChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: Array(20).fill(''),
@@ -233,27 +235,29 @@
         }
     });
 
-        function addChartData(value) {
-            ratioChart.data.datasets[0].data.shift();
-            ratioChart.data.datasets[0].data.push(value);
-            ratioChart.update();
+    function addChartData(value) {
+        ratioChart.data.datasets[0].data.shift();
+        ratioChart.data.datasets[0].data.push(value);
+        ratioChart.update();
     }
 
-        
-      function logMessage(text, type = "SYSTEM", details = []) {
+
+    function logMessage(text, type = "SYSTEM", details = []) {
         const logsContainer = document.getElementById('intervention-status');
         const timestamp = new Date().toTimeString().split(' ')[0];
         
         let colorClass = "text-slate-400";
         if (type === "ERROR") colorClass = "text-rose-400 font-bold";
         if (type === "ACTIVE") colorClass = "text-emerald-400 font-medium";
+        if (type === "WARNING") colorClass = "text-amber-400 font-semibold";
         if (type === "CRITICAL") colorClass = "text-rose-500 animate-pulse font-semibold";
+        if (type === "MONITORING") colorClass = "text-blue-400 font-mono";
 
         let detailsHTML = '';
         if (details.length > 0) {
-            detailsHTML = `<div class="pl-4 text-xs text-slate-400 space-y-1 mt-1">`;
+            detailsHTML = `<div class="pl-4 text-xs space-y-0.5 mt-0.5">`;
             details.forEach(item => {
-                detailsHTML += `<p class="text-emerald-400">[ACTIVE] ${item}</p>`;
+                detailsHTML += `<p class="text-slate-400">↳ ${item}</p>`;
             });
             detailsHTML += `</div>`;
         }
@@ -274,10 +278,17 @@
         }
 
         logsContainer.innerHTML += logHTML;
+        
+        
+        if (logsContainer.children.length > 30) {
+            logsContainer.removeChild(logsContainer.firstElementChild);
+        }
+
         logsContainer.scrollTop = logsContainer.scrollHeight;
     }
 
-        modeDatasetBtn.addEventListener('click', () => {
+
+    modeDatasetBtn.addEventListener('click', () => {
         currentMode = 'dataset';
         modeDatasetBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all bg-blue-600 text-white shadow-sm";
         modeWebcamBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all text-slate-400 hover:text-slate-200";
@@ -292,7 +303,7 @@
         logMessage("Switched engine routing to static PhysioNet Human EEG Dataset repository.");
     });
 
-        modeWebcamBtn.addEventListener('click', () => {
+    modeWebcamBtn.addEventListener('click', () => {
         currentMode = 'webcam';
         modeWebcamBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all bg-emerald-600 text-white shadow-sm";
         modeDatasetBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all text-slate-400 hover:text-slate-200";
@@ -304,8 +315,7 @@
         }
     });
 
-        
-        function toggleHardwareStream() {
+    function toggleHardwareStream() {
         const toggle = document.getElementById('stream-toggle');
         const thumb = document.getElementById('toggle-thumb');
         const indicator = document.getElementById('status-indicator');
@@ -327,7 +337,7 @@
             if (currentMode === 'webcam') startWebcamEyeTracking();
 
             runDataProcessorDaemon();
-            streamInterval = setInterval(runDataProcessorDaemon, 500); // Updated to 500ms for fast telemetry sync
+            streamInterval = setInterval(runDataProcessorDaemon, 1000); 
         } else {
             toggle.className = "relative inline-flex h-6 w-11 items-center rounded-full bg-slate-700 transition-colors duration-300";
             thumb.className = "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 translate-x-1";
@@ -342,7 +352,8 @@
         }
     }
 
-        function runDataProcessorDaemon() {
+
+    function runDataProcessorDaemon() {
         tickCounter++;
         let inputIntensity = 1.0;
         let displayLabel = "Calibrating";
@@ -352,30 +363,25 @@
             datasetIndex++;
             displayLabel = `PhysioNet Stream [Idx: ${(datasetIndex % physioNetData.length)} / ${physioNetData.length}]`;
         } else {
-            // Pull real stress metrics calculated from WebGazer
             inputIntensity = cameraStressScore;
-            displayLabel = `Ocular Vision Matrix [Stress Index: ${cameraStressScore.toFixed(2)}]`;
+            displayLabel = `Ocular Matrix [Stress Index: ${cameraStressScore.toFixed(2)}]`;
         }
 
         document.getElementById('current-sim-state').innerText = displayLabel;
         calculateLocalMetrics(inputIntensity);
     }
 
-        function calculateLocalMetrics(intensity) {
+    function calculateLocalMetrics(intensity) {
         let baseAlpha = 1200.0;
         let baseBeta = 1800.0;
         
-        // Dynamic Biosignal Simulation mapped to stress intensity
         if (intensity >= 3.5) { 
-            // High Cognitive Stress: Low Alpha, Elevated Beta
             baseAlpha = 300.0 + (Math.random() * 50);
             baseBeta = 3500.0 + (Math.random() * 300);
         } else if (intensity > 1.8) { 
-            // Moderate Fatigue/Load
             baseAlpha = 700.0 + (Math.random() * 100);
             baseBeta = 2400.0 + (Math.random() * 200);
         } else { 
-            // Baseline Focus
             baseAlpha = 1400.0 + (Math.random() * 100);
             baseBeta = 1600.0 + (Math.random() * 100);
         }
@@ -389,9 +395,43 @@
         
         addChartData(calculatedRatio);
         updateVisualEnvironment(interventionLevel);
+
+        if (tickCounter % 3 === 0) {
+            if (interventionLevel === 3) {
+                logMessage(`HIGH STRESS DETECTED (Ratio: ${calculatedRatio.toFixed(2)})`, "CRITICAL", [
+                    `Alpha Desynchronization: ${baseAlpha.toFixed(1)} uV²`,
+                    `Beta Power Surge: ${baseBeta.toFixed(1)} uV²`,
+                    `Interface adjustments engaged`
+                ]);
+            } else if (interventionLevel === 1) {
+                logMessage(`MODERATE COGNITIVE LOAD (Ratio: ${calculatedRatio.toFixed(2)})`, "WARNING", [
+                    `Saccadic movement elevated`,
+                    `Monitoring baseline shift...`
+                ]);
+            } else {
+                logMessage(`Optimal Focus State (Ratio: ${calculatedRatio.toFixed(2)})`, "MONITORING", [
+                    `Biometric baseline stable`
+                ]);
+            }
+        }
+
+      
+        if (interventionLevel !== lastLoggedLevel) {
+            if (interventionLevel === 3) {
+                logMessage("CRITICAL THRESHOLD EXCEEDED. Cognitive Lockout initiated.", "CRITICAL", [
+                    "Suppressing notifications",
+                    "Simplifying active UI context"
+                ]);
+            } else if (interventionLevel === 1) {
+                logMessage("Cognitive fatigue build-up detected. Adjusting interface profile.", "WARNING");
+            } else if (lastLoggedLevel !== -1) {
+                logMessage("Cognitive load normalized. Biometric equilibrium restored.", "ACTIVE");
+            }
+            lastLoggedLevel = interventionLevel;
+        }
     }
 
-        function updateVisualEnvironment(level) {
+    function updateVisualEnvironment(level) {
         const body = document.getElementById('body-env');
         const badge = document.getElementById('system-badge');
         const card = document.getElementById('intervention-card');
@@ -403,9 +443,9 @@
             card.className = "bg-slate-900 border border-rose-600 rounded-2xl p-6 shadow-xl shadow-rose-950/20";
         } else if (level > 0) {
             body.className = "bg-slate-950 text-slate-300 min-h-screen font-sans transition-all duration-1000 saturate-[0.8]";
-            badge.className = "bg-rose-500/10 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest animate-pulse";
+            badge.className = "bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest animate-pulse";
             badge.innerText = `CGEN ADJUSTING: LEVEL ${level}`;
-            card.className = "bg-slate-900 border border-rose-500/30 rounded-2xl p-6 shadow-xl shadow-rose-950/10";
+            card.className = "bg-slate-900 border border-amber-500/30 rounded-2xl p-6 shadow-xl shadow-amber-950/10";
         } else {
             body.className = "bg-slate-950 text-slate-100 min-h-screen font-sans transition-all duration-1000";
             badge.className = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest";
@@ -414,8 +454,8 @@
         }
     }
 
-        
-        async function startWebcamEyeTracking() {
+   
+    async function startWebcamEyeTracking() {
         logMessage("Initializing Ocular Stress Tracking Matrix...", "ACTIVE");
 
         try { webgazer.end(); } catch(e){}
@@ -430,31 +470,20 @@
             const currentX = data.x;
             const currentY = data.y;
 
-            // Calculate Euclidean Saccadic Distance
             const saccadeDistance = Math.sqrt(Math.pow(currentX - lastGazeX, 2) + Math.pow(currentY - lastGazeY, 2));
 
             gazeHistory.push(saccadeDistance);
-            if (gazeHistory.length > 20) gazeHistory.shift(); // Keep moving window of 20 gaze ticks
+            if (gazeHistory.length > 20) gazeHistory.shift();
 
-            // Calculate Volatility (Standard Deviation of Movement)
             const avgDistance = gazeHistory.reduce((a, b) => a + b, 0) / gazeHistory.length;
             
-            // MAP VOLATILITY TO COGNITIVE STRESS:
-            // High Movement (Erratic Searching/Frustration) OR Frozen Fixation (Staring/Cognitive Lockout)
+          
             if (avgDistance > 180) { 
-                cameraStressScore = Math.min(cameraStressScore + 0.3, 5.5); // High Saccadic Stress
-            } else if (avgDistance < 10) { 
-                cameraStressScore = Math.min(cameraStressScore + 0.2, 4.8); // Staring / Cognitive Lock
+                cameraStressScore = Math.min(cameraStressScore + 0.35, 5.5); 
+            } else if (avgDistance < 12) { 
+                cameraStressScore = Math.min(cameraStressScore + 0.25, 4.8); 
             } else {
-                cameraStressScore = Math.max(cameraStressScore - 0.15, 0.8); // Normal Focus
-            }
-
-            if (cameraStressScore > 4.0 && !isCognitivelyBlocked) {
-                isCognitivelyBlocked = true;
-                logMessage("Cognitive overload identified.", "CRITICAL");
-            } else if (cameraStressScore < 2.0 && isCognitivelyBlocked) {
-                isCognitivelyBlocked = false;
-                logMessage("Gaze normalized. Re-stabilizing biometric telemetry.", "ACTIVE");
+                cameraStressScore = Math.max(cameraStressScore - 0.2, 0.8); 
             }
 
             lastGazeX = currentX;
@@ -481,7 +510,7 @@
                 nativeVideo.style.display = 'block';
                 
                 videoContainer.appendChild(nativeVideo);
-                logMessage("Webcam matrix online. Cognitive load detection running.", "ACTIVE");
+                logMessage("Webcam matrix online. Real-time cognitive load detection running.", "ACTIVE");
             }
         }, 250);
     }
