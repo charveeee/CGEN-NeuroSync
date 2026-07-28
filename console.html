@@ -454,7 +454,7 @@
         }
     }
 
- // --- ENHANCED BLINK & SACCADE TRACKING ENGINE ---
+
 let lastGazeTimestamp = Date.now();
 let blinkCountWindow = [];
 
@@ -473,10 +473,10 @@ async function startWebcamEyeTracking() {
         const now = Date.now();
         const timeSinceLastGaze = now - lastGazeTimestamp;
 
-        // 1. BLINK DETECTION VIA TRACKING DROPOUT (Eyelids closed for 120ms - 500ms)
+      
         if (data === null) {
             if (timeSinceLastGaze > 120 && timeSinceLastGaze < 500) {
-                // Record a blink timestamp
+
                 blinkCountWindow.push(now);
             }
             return;
@@ -484,14 +484,14 @@ async function startWebcamEyeTracking() {
 
         lastGazeTimestamp = now;
 
-        // Keep a rolling 5-second window of blink events
+       
         blinkCountWindow = blinkCountWindow.filter(t => now - t < 5000);
         const blinkRatePer5Sec = blinkCountWindow.length;
 
         const currentX = data.x;
         const currentY = data.y;
 
-        // Calculate Euclidean distance shift
+ 
         const saccadeDistance = Math.sqrt(Math.pow(currentX - lastGazeX, 2) + Math.pow(currentY - lastGazeY, 2));
 
         gazeHistory.push(saccadeDistance);
@@ -499,8 +499,7 @@ async function startWebcamEyeTracking() {
 
         const avgDistance = gazeHistory.reduce((a, b) => a + b, 0) / gazeHistory.length;
 
-        // 2. STRESS CALCULATION combining Blink Frequency + Eye Volatility
-        // > 4 blinks in 5 sec OR fast gaze jumping = Stress Spike
+
         if (blinkRatePer5Sec >= 4 || avgDistance > 150) { 
             cameraStressScore = Math.min(cameraStressScore + 0.6, 6.0); 
             
