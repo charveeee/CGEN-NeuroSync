@@ -451,7 +451,7 @@
 
             if (cameraStressScore > 4.0 && !isCognitivelyBlocked) {
                 isCognitivelyBlocked = true;
-                logMessage("Saccadic volatility trigger. Cognitive overload identified.", "CRITICAL");
+                logMessage("Cognitive overload identified.", "CRITICAL");
             } else if (cameraStressScore < 2.0 && isCognitivelyBlocked) {
                 isCognitivelyBlocked = false;
                 logMessage("Gaze normalized. Re-stabilizing biometric telemetry.", "ACTIVE");
@@ -481,7 +481,7 @@
                 nativeVideo.style.display = 'block';
                 
                 videoContainer.appendChild(nativeVideo);
-                logMessage("Webcam matrix online. Real-time cognitive load detection running.", "ACTIVE");
+                logMessage("Webcam matrix online. Cognitive load detection running.", "ACTIVE");
             }
         }, 250);
     }
