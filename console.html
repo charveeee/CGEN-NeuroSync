@@ -507,10 +507,10 @@ async function startWebcamEyeTracking() {
                 logMessage(`RAPID BLINKING DETECTED (${blinkRatePer5Sec} blinks / 5s)`, "WARNING");
             }
         } else if (avgDistance < 10) { 
-            // Prolonged Staring / Cognitive Lockout
+
             cameraStressScore = Math.min(cameraStressScore + 0.2, 4.8); 
         } else {
-            // Normal, smooth eye movement
+           
             cameraStressScore = Math.max(cameraStressScore - 0.25, 0.8); 
         }
 
