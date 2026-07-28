@@ -454,66 +454,95 @@
         }
     }
 
-   
-    async function startWebcamEyeTracking() {
-        logMessage("Initializing Ocular Stress Tracking Matrix...", "ACTIVE");
+ // --- ENHANCED BLINK & SACCADE TRACKING ENGINE ---
+let lastGazeTimestamp = Date.now();
+let blinkCountWindow = [];
 
-        try { webgazer.end(); } catch(e){}
+async function startWebcamEyeTracking() {
+    logMessage("Initializing Ocular & Blink Stress Tracking Matrix...", "ACTIVE");
 
-        webgazer.params.showVideoPreview = true;
-        webgazer.params.showCanvasPreview = false; 
-        webgazer.params.showFaceOverlay = false;
+    try { webgazer.end(); } catch(e){}
 
-        webgazer.setGazeListener(function(data, elapsedTime) {
-            if (data == null || !activeStream || currentMode !== 'webcam') return;
+    webgazer.params.showVideoPreview = true;
+    webgazer.params.showCanvasPreview = false; 
+    webgazer.params.showFaceOverlay = false;
 
-            const currentX = data.x;
-            const currentY = data.y;
+    webgazer.setGazeListener(function(data, elapsedTime) {
+        if (!activeStream || currentMode !== 'webcam') return;
 
-            const saccadeDistance = Math.sqrt(Math.pow(currentX - lastGazeX, 2) + Math.pow(currentY - lastGazeY, 2));
+        const now = Date.now();
+        const timeSinceLastGaze = now - lastGazeTimestamp;
 
-            gazeHistory.push(saccadeDistance);
-            if (gazeHistory.length > 20) gazeHistory.shift();
-
-            const avgDistance = gazeHistory.reduce((a, b) => a + b, 0) / gazeHistory.length;
-            
-          
-            if (avgDistance > 180) { 
-                cameraStressScore = Math.min(cameraStressScore + 0.35, 5.5); 
-            } else if (avgDistance < 12) { 
-                cameraStressScore = Math.min(cameraStressScore + 0.25, 4.8); 
-            } else {
-                cameraStressScore = Math.max(cameraStressScore - 0.2, 0.8); 
+        // 1. BLINK DETECTION VIA TRACKING DROPOUT (Eyelids closed for 120ms - 500ms)
+        if (data === null) {
+            if (timeSinceLastGaze > 120 && timeSinceLastGaze < 500) {
+                // Record a blink timestamp
+                blinkCountWindow.push(now);
             }
-
-            lastGazeX = currentX;
-            lastGazeY = currentY;
-        });
-
-        try {
-            webgazer.begin();
-        } catch (err) {
-            logMessage("Camera matrix initialization failed: " + err.message, "ERROR");
+            return;
         }
 
-        const videoCheckInterval = setInterval(() => {
-            const nativeVideo = document.getElementById('webgazerVideoFeed') || document.querySelector('video');
-            if (nativeVideo && videoContainer) {
-                clearInterval(videoCheckInterval);
-                placeholderText.classList.add('hidden');
-                
-                nativeVideo.id = 'webgazerVideoFeed';
-                nativeVideo.style.position = 'relative';
-                nativeVideo.style.width = '100%';
-                nativeVideo.style.height = '100%';
-                nativeVideo.style.objectFit = 'cover';
-                nativeVideo.style.display = 'block';
-                
-                videoContainer.appendChild(nativeVideo);
-                logMessage("Webcam matrix online. Real-time cognitive load detection running.", "ACTIVE");
+        lastGazeTimestamp = now;
+
+        // Keep a rolling 5-second window of blink events
+        blinkCountWindow = blinkCountWindow.filter(t => now - t < 5000);
+        const blinkRatePer5Sec = blinkCountWindow.length;
+
+        const currentX = data.x;
+        const currentY = data.y;
+
+        // Calculate Euclidean distance shift
+        const saccadeDistance = Math.sqrt(Math.pow(currentX - lastGazeX, 2) + Math.pow(currentY - lastGazeY, 2));
+
+        gazeHistory.push(saccadeDistance);
+        if (gazeHistory.length > 20) gazeHistory.shift();
+
+        const avgDistance = gazeHistory.reduce((a, b) => a + b, 0) / gazeHistory.length;
+
+        // 2. STRESS CALCULATION combining Blink Frequency + Eye Volatility
+        // > 4 blinks in 5 sec OR fast gaze jumping = Stress Spike
+        if (blinkRatePer5Sec >= 4 || avgDistance > 150) { 
+            cameraStressScore = Math.min(cameraStressScore + 0.6, 6.0); 
+            
+            if (blinkRatePer5Sec >= 4 && tickCounter % 2 === 0) {
+                logMessage(`RAPID BLINKING DETECTED (${blinkRatePer5Sec} blinks / 5s)`, "WARNING");
             }
-        }, 250);
+        } else if (avgDistance < 10) { 
+            // Prolonged Staring / Cognitive Lockout
+            cameraStressScore = Math.min(cameraStressScore + 0.2, 4.8); 
+        } else {
+            // Normal, smooth eye movement
+            cameraStressScore = Math.max(cameraStressScore - 0.25, 0.8); 
+        }
+
+        lastGazeX = currentX;
+        lastGazeY = currentY;
+    });
+
+    try {
+        webgazer.begin();
+    } catch (err) {
+        logMessage("Camera matrix initialization failed: " + err.message, "ERROR");
     }
+
+    const videoCheckInterval = setInterval(() => {
+        const nativeVideo = document.getElementById('webgazerVideoFeed') || document.querySelector('video');
+        if (nativeVideo && videoContainer) {
+            clearInterval(videoCheckInterval);
+            placeholderText.classList.add('hidden');
+            
+            nativeVideo.id = 'webgazerVideoFeed';
+            nativeVideo.style.position = 'relative';
+            nativeVideo.style.width = '100%';
+            nativeVideo.style.height = '100%';
+            nativeVideo.style.objectFit = 'cover';
+            nativeVideo.style.display = 'block';
+            
+            videoContainer.appendChild(nativeVideo);
+            logMessage("Webcam matrix online. Blink & gaze velocity active.", "ACTIVE");
+        }
+    }, 250);
+}
 </script>
 </body>
 </html>
