@@ -488,11 +488,13 @@
             blinkCountWindow = blinkCountWindow.filter(t => now - t < 5000);
             const blinkRatePer5Sec = blinkCountWindow.length;
 
-            const currentX = data.x;
-            const currentY = data.y;
+            const alpha = 0.2; // Smooths out noisy webcam coordinate jumps
+        const smoothedX = lastGazeX + alpha * (data.x - lastGazeX);
+        const smoothedY = lastGazeY + alpha * (data.y - lastGazeY);
 
-      
-            const saccadeDistance = Math.sqrt(Math.pow(currentX - lastGazeX, 2) + Math.pow(currentY - lastGazeY, 2));
+        const saccadeDistance = Math.sqrt(
+            Math.pow(smoothedX - lastGazeX, 2) + Math.pow(smoothedY - lastGazeY, 2)
+        );
 
             gazeHistory.push(saccadeDistance);
             if (gazeHistory.length > 15) gazeHistory.shift();
