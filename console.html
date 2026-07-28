@@ -146,7 +146,8 @@
     let lastLoggedLevel = -1;
 
 
-   const physioNetData = [
+    
+    const physioNetData = [
             //Making this as precise as possible with over 400 indeces 
             //Random Shi at first lol 
             1.5, 0.9, 1.4, 1.8, 2.1, 1.1, 0.7, 2.3, 3.1, 2.5, 1.2, 0.8, 1.02, 1.15, 0.98, 1.05, 1.22, 1.18, 0.95, 1.01, 
@@ -193,13 +194,13 @@
         ];
         let datasetIndex = 0;
 
-
-
+    // UI Elements
     const modeDatasetBtn = document.getElementById('modeDatasetBtn');
     const modeWebcamBtn = document.getElementById('modeWebcamBtn');
     const videoContainer = document.getElementById('videoFeedbackContainer');
     const placeholderText = document.getElementById('webcamPlaceholderText');
 
+    // Chart.js Configuration
     const ctx = document.getElementById('ratioChart').getContext('2d');
     const initialData = Array(20).fill(0);
     
@@ -241,7 +242,7 @@
         ratioChart.update();
     }
 
-
+    // --- LOGGING ENGINE ---
     function logMessage(text, type = "SYSTEM", details = []) {
         const logsContainer = document.getElementById('intervention-status');
         const timestamp = new Date().toTimeString().split(' ')[0];
@@ -279,7 +280,6 @@
 
         logsContainer.innerHTML += logHTML;
         
-        
         if (logsContainer.children.length > 30) {
             logsContainer.removeChild(logsContainer.firstElementChild);
         }
@@ -287,7 +287,7 @@
         logsContainer.scrollTop = logsContainer.scrollHeight;
     }
 
-
+    // --- Mode Selectors ---
     modeDatasetBtn.addEventListener('click', () => {
         currentMode = 'dataset';
         modeDatasetBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all bg-blue-600 text-white shadow-sm";
@@ -352,7 +352,7 @@
         }
     }
 
-
+    // --- REAL-TIME DAEMON ---
     function runDataProcessorDaemon() {
         tickCounter++;
         let inputIntensity = 1.0;
@@ -415,7 +415,6 @@
             }
         }
 
-      
         if (interventionLevel !== lastLoggedLevel) {
             if (interventionLevel === 3) {
                 logMessage("CRITICAL THRESHOLD EXCEEDED. Cognitive Lockout initiated.", "CRITICAL", [
@@ -454,94 +453,115 @@
         }
     }
 
+    // --- RECALIBRATED WEBCAM EYE TRACKING ENGINE ---
+    let lastGazeTimestamp = Date.now();
+    let blinkCountWindow = [];
+    let isCurrentlyBlinking = false;
 
-let lastGazeTimestamp = Date.now();
-let blinkCountWindow = [];
+    async function startWebcamEyeTracking() {
+        logMessage("Initializing Ocular & Blink Stress Tracking Matrix...", "ACTIVE");
 
-async function startWebcamEyeTracking() {
-    logMessage("Initializing Ocular & Blink Stress Tracking Matrix...", "ACTIVE");
+        try { webgazer.end(); } catch(e){}
 
-    try { webgazer.end(); } catch(e){}
+        webgazer.params.showVideoPreview = true;
+        webgazer.params.showCanvasPreview = false; 
+        webgazer.params.showFaceOverlay = false;
 
-    webgazer.params.showVideoPreview = true;
-    webgazer.params.showCanvasPreview = false; 
-    webgazer.params.showFaceOverlay = false;
+        // Reset gaze position defaults
+        lastGazeX = window.innerWidth / 2;
+        lastGazeY = window.innerHeight / 2;
 
-    webgazer.setGazeListener(function(data, elapsedTime) {
-        if (!activeStream || currentMode !== 'webcam') return;
+        webgazer.setGazeListener(function(data, elapsedTime) {
+            if (!activeStream || currentMode !== 'webcam') return;
 
-        const now = Date.now();
-        const timeSinceLastGaze = now - lastGazeTimestamp;
+            const now = Date.now();
 
-      
-        if (data === null) {
-            if (timeSinceLastGaze > 120 && timeSinceLastGaze < 500) {
-
-                blinkCountWindow.push(now);
+            // 1. BLINK DETECTION (Handles WebGazer returning null during blinks)
+            if (data === null) {
+                if (!isCurrentlyBlinking) {
+                    isCurrentlyBlinking = true;
+                    blinkCountWindow.push(now);
+                }
+                return;
             }
-            return;
+
+            isCurrentlyBlinking = false;
+            lastGazeTimestamp = now;
+
+            // Maintain rolling 5-second window of blinks
+            blinkCountWindow = blinkCountWindow.filter(t => now - t < 5000);
+            const blinkRatePer5Sec = blinkCountWindow.length;
+
+            const currentX = data.x;
+            const currentY = data.y;
+
+            // Calculate Euclidean distance between gaze frames
+            const saccadeDistance = Math.sqrt(Math.pow(currentX - lastGazeX, 2) + Math.pow(currentY - lastGazeY, 2));
+
+            gazeHistory.push(saccadeDistance);
+            if (gazeHistory.length > 15) gazeHistory.shift();
+
+            const avgDistance = gazeHistory.reduce((a, b) => a + b, 0) / gazeHistory.length;
+
+            // 2. RECALIBRATED STRESS SCORE MATH (Prevents instantaneous decay)
+            if (blinkRatePer5Sec >= 3 || avgDistance > 120) { 
+                // High Blink Rate OR Darting Eyes
+                cameraStressScore = Math.min(cameraStressScore + 0.35, 6.0); 
+                
+                if (blinkRatePer5Sec >= 3 && tickCounter % 2 === 0) {
+                    logMessage(`RAPID BLINKING DETECTED (${blinkRatePer5Sec} blinks / 5s)`, "WARNING");
+                }
+            } else if (avgDistance < 8) { 
+                // Prolonged Staring (Cognitive Block/Lockout)
+                cameraStressScore = Math.min(cameraStressScore + 0.15, 5.0); 
+            } else {
+                // Gentle per-frame decay rate (0.01 instead of 0.25)
+                cameraStressScore = Math.max(cameraStressScore - 0.01, 0.8); 
+            }
+
+            lastGazeX = currentX;
+            lastGazeY = currentY;
+
+            // Live debug monitor in console/UI
+            const debugOverlay = document.getElementById('debug-telemetry');
+            if (debugOverlay) {
+                debugOverlay.innerText = `Score: ${cameraStressScore.toFixed(2)} | Blinks/5s: ${blinkRatePer5Sec} | Motion: ${avgDistance.toFixed(0)}px`;
+            }
+        });
+
+        try {
+            webgazer.begin();
+        } catch (err) {
+            logMessage("Camera matrix initialization failed: " + err.message, "ERROR");
         }
 
-        lastGazeTimestamp = now;
+        const videoCheckInterval = setInterval(() => {
+            const nativeVideo = document.getElementById('webgazerVideoFeed') || document.querySelector('video');
+            if (nativeVideo && videoContainer) {
+                clearInterval(videoCheckInterval);
+                placeholderText.classList.add('hidden');
+                
+                nativeVideo.id = 'webgazerVideoFeed';
+                nativeVideo.style.position = 'relative';
+                nativeVideo.style.width = '100%';
+                nativeVideo.style.height = '100%';
+                nativeVideo.style.objectFit = 'cover';
+                nativeVideo.style.display = 'block';
+                
+                // Attach a live overlay tag over the video feed
+                if (!document.getElementById('debug-telemetry')) {
+                    const debugDiv = document.createElement('div');
+                    debugDiv.id = 'debug-telemetry';
+                    debugDiv.className = 'absolute top-2 right-2 bg-slate-950/80 border border-slate-700 px-2 py-1 rounded text-[10px] font-mono text-emerald-400 z-10 pointer-events-none';
+                    debugDiv.innerText = 'Initializing metrics...';
+                    videoContainer.appendChild(debugDiv);
+                }
 
-       
-        blinkCountWindow = blinkCountWindow.filter(t => now - t < 5000);
-        const blinkRatePer5Sec = blinkCountWindow.length;
-
-        const currentX = data.x;
-        const currentY = data.y;
-
- 
-        const saccadeDistance = Math.sqrt(Math.pow(currentX - lastGazeX, 2) + Math.pow(currentY - lastGazeY, 2));
-
-        gazeHistory.push(saccadeDistance);
-        if (gazeHistory.length > 20) gazeHistory.shift();
-
-        const avgDistance = gazeHistory.reduce((a, b) => a + b, 0) / gazeHistory.length;
-
-
-        if (blinkRatePer5Sec >= 4 || avgDistance > 150) { 
-            cameraStressScore = Math.min(cameraStressScore + 0.6, 6.0); 
-            
-            if (blinkRatePer5Sec >= 4 && tickCounter % 2 === 0) {
-                logMessage(`RAPID BLINKING DETECTED (${blinkRatePer5Sec} blinks / 5s)`, "WARNING");
+                videoContainer.appendChild(nativeVideo);
+                logMessage("Webcam matrix online. Blink & gaze velocity active.", "ACTIVE");
             }
-        } else if (avgDistance < 10) { 
-
-            cameraStressScore = Math.min(cameraStressScore + 0.2, 4.8); 
-        } else {
-           
-            cameraStressScore = Math.max(cameraStressScore - 0.25, 0.8); 
-        }
-
-        lastGazeX = currentX;
-        lastGazeY = currentY;
-    });
-
-    try {
-        webgazer.begin();
-    } catch (err) {
-        logMessage("Camera matrix initialization failed: " + err.message, "ERROR");
+        }, 250);
     }
-
-    const videoCheckInterval = setInterval(() => {
-        const nativeVideo = document.getElementById('webgazerVideoFeed') || document.querySelector('video');
-        if (nativeVideo && videoContainer) {
-            clearInterval(videoCheckInterval);
-            placeholderText.classList.add('hidden');
-            
-            nativeVideo.id = 'webgazerVideoFeed';
-            nativeVideo.style.position = 'relative';
-            nativeVideo.style.width = '100%';
-            nativeVideo.style.height = '100%';
-            nativeVideo.style.objectFit = 'cover';
-            nativeVideo.style.display = 'block';
-            
-            videoContainer.appendChild(nativeVideo);
-            logMessage("Webcam matrix online. Blink & gaze velocity active.", "ACTIVE");
-        }
-    }, 250);
-}
 </script>
 </body>
 </html>
