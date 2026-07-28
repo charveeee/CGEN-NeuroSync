@@ -194,13 +194,12 @@
         ];
         let datasetIndex = 0;
 
-    // UI Elements
+
     const modeDatasetBtn = document.getElementById('modeDatasetBtn');
     const modeWebcamBtn = document.getElementById('modeWebcamBtn');
     const videoContainer = document.getElementById('videoFeedbackContainer');
     const placeholderText = document.getElementById('webcamPlaceholderText');
 
-    // Chart.js Configuration
     const ctx = document.getElementById('ratioChart').getContext('2d');
     const initialData = Array(20).fill(0);
     
@@ -242,7 +241,7 @@
         ratioChart.update();
     }
 
-    // --- LOGGING ENGINE ---
+
     function logMessage(text, type = "SYSTEM", details = []) {
         const logsContainer = document.getElementById('intervention-status');
         const timestamp = new Date().toTimeString().split(' ')[0];
@@ -287,7 +286,6 @@
         logsContainer.scrollTop = logsContainer.scrollHeight;
     }
 
-    // --- Mode Selectors ---
     modeDatasetBtn.addEventListener('click', () => {
         currentMode = 'dataset';
         modeDatasetBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all bg-blue-600 text-white shadow-sm";
@@ -352,7 +350,7 @@
         }
     }
 
-    // --- REAL-TIME DAEMON ---
+ 
     function runDataProcessorDaemon() {
         tickCounter++;
         let inputIntensity = 1.0;
@@ -453,7 +451,6 @@
         }
     }
 
-    // --- RECALIBRATED WEBCAM EYE TRACKING ENGINE ---
     let lastGazeTimestamp = Date.now();
     let blinkCountWindow = [];
     let isCurrentlyBlinking = false;
@@ -467,7 +464,7 @@
         webgazer.params.showCanvasPreview = false; 
         webgazer.params.showFaceOverlay = false;
 
-        // Reset gaze position defaults
+ 
         lastGazeX = window.innerWidth / 2;
         lastGazeY = window.innerHeight / 2;
 
@@ -476,7 +473,6 @@
 
             const now = Date.now();
 
-            // 1. BLINK DETECTION (Handles WebGazer returning null during blinks)
             if (data === null) {
                 if (!isCurrentlyBlinking) {
                     isCurrentlyBlinking = true;
@@ -488,14 +484,14 @@
             isCurrentlyBlinking = false;
             lastGazeTimestamp = now;
 
-            // Maintain rolling 5-second window of blinks
+ 
             blinkCountWindow = blinkCountWindow.filter(t => now - t < 5000);
             const blinkRatePer5Sec = blinkCountWindow.length;
 
             const currentX = data.x;
             const currentY = data.y;
 
-            // Calculate Euclidean distance between gaze frames
+      
             const saccadeDistance = Math.sqrt(Math.pow(currentX - lastGazeX, 2) + Math.pow(currentY - lastGazeY, 2));
 
             gazeHistory.push(saccadeDistance);
@@ -503,26 +499,29 @@
 
             const avgDistance = gazeHistory.reduce((a, b) => a + b, 0) / gazeHistory.length;
 
-            // 2. RECALIBRATED STRESS SCORE MATH (Prevents instantaneous decay)
+        
             if (blinkRatePer5Sec >= 3 || avgDistance > 120) { 
-                // High Blink Rate OR Darting Eyes
+        
                 cameraStressScore = Math.min(cameraStressScore + 0.35, 6.0); 
                 
                 if (blinkRatePer5Sec >= 3 && tickCounter % 2 === 0) {
                     logMessage(`RAPID BLINKING DETECTED (${blinkRatePer5Sec} blinks / 5s)`, "WARNING");
                 }
-            } else if (avgDistance < 8) { 
-                // Prolonged Staring (Cognitive Block/Lockout)
-                cameraStressScore = Math.min(cameraStressScore + 0.15, 5.0); 
-            } else {
-                // Gentle per-frame decay rate (0.01 instead of 0.25)
+            } else if (avgDistance < 45) { 
+                cameraStressScore = Math.min(cameraStressScore + 0.25, 5.0); 
+                if (tickCounter % 2 === 0) {
+        logMessage("COGNITIVE LOCKOUT DETECTED (Prolonged Fixation)", "WARNING");
+    }
+}
+            else {
+            
                 cameraStressScore = Math.max(cameraStressScore - 0.01, 0.8); 
             }
 
             lastGazeX = currentX;
             lastGazeY = currentY;
 
-            // Live debug monitor in console/UI
+            
             const debugOverlay = document.getElementById('debug-telemetry');
             if (debugOverlay) {
                 debugOverlay.innerText = `Score: ${cameraStressScore.toFixed(2)} | Blinks/5s: ${blinkRatePer5Sec} | Motion: ${avgDistance.toFixed(0)}px`;
@@ -548,7 +547,7 @@
                 nativeVideo.style.objectFit = 'cover';
                 nativeVideo.style.display = 'block';
                 
-                // Attach a live overlay tag over the video feed
+      
                 if (!document.getElementById('debug-telemetry')) {
                     const debugDiv = document.createElement('div');
                     debugDiv.id = 'debug-telemetry';
