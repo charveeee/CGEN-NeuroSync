@@ -8,32 +8,38 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
     <style>
-        #webgazerVideoFeed {
-            position: relative !important;
+
+        #webgazerVideoFeed, #webgazerFaceOverlay, #webgazerFaceFeedbackBox {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
             width: 100% !important;
             height: 100% !important;
             object-fit: cover !important;
             transform: scaleX(-1); 
+        }
+        #webgazerGazeDot {
+            z-index: 9999 !important;
         }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans transition-all duration-1000" id="body-env">
 
     <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
-    <div class="flex items-center space-x-3">
-        <div id="status-indicator" class="h-3 w-3 rounded-full bg-slate-600 shadow-lg transition-all duration-300"></div>
+        <div class="flex items-center space-x-3">
+            <div id="status-indicator" class="h-3 w-3 rounded-full bg-slate-600 shadow-lg transition-all duration-300"></div>
+            
+            <a href="index.html" class="group flex items-center">
+                <h1 class="text-xl font-bold tracking-wider text-slate-100 group-hover:text-emerald-400 transition-colors">
+                    CGEN
+                </h1>
+            </a>
+        </div>
         
-        <a href="index.html" class="group flex items-center">
-            <h1 class="text-xl font-bold tracking-wider text-slate-100 group-hover:text-emerald-400 transition-colors">
-                CGEN
-            </h1>
-        </a>
-    </div>
-    
-    <div id="system-badge" class="bg-slate-800 text-slate-400 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest transition-all duration-300">
-        Hardware Offline
-    </div>
-</header>
+        <div id="system-badge" class="bg-slate-800 text-slate-400 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest transition-all duration-300">
+            Hardware Offline
+        </div>
+    </header>
 
     <main class="max-w-7xl mx-auto p-6 space-y-6">
         
@@ -57,24 +63,21 @@
             <div class="space-y-6">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
-                        <a href="docs.html" class="text-xs text-slate-400 font-medium uppercase tracking-wider hover:text-blue-400 transition-colors flex justify-between items-center group">
+                        <div class="text-xs text-slate-400 font-medium uppercase tracking-wider flex justify-between items-center">
                             <span>Beta/Alpha Ratio</span>
-                            <span class="opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
-                        </a>
+                        </div>
                         <h3 id="metric-ratio" class="text-2xl font-bold mt-2 text-blue-400 transition-all">0.00</h3>
                     </div>
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
-                        <a href="docs.html" class="text-xs text-slate-400 font-medium uppercase tracking-wider hover:text-teal-400 transition-colors flex justify-between items-center group">
+                        <div class="text-xs text-slate-400 font-medium uppercase tracking-wider flex justify-between items-center">
                             <span>Alpha (Calm)</span>
-                            <span class="opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
-                        </a>
+                        </div>
                         <h3 id="metric-alpha" class="text-2xl font-bold mt-2 text-teal-400 transition-all">0.0</h3>
                     </div>
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
-                        <a href="docs.html" class="text-xs text-slate-400 font-medium uppercase tracking-wider hover:text-rose-400 transition-colors flex justify-between items-center group">
+                        <div class="text-xs text-slate-400 font-medium uppercase tracking-wider flex justify-between items-center">
                             <span>Beta (Focus)</span>
-                            <span class="opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
-                        </a>
+                        </div>
                         <h3 id="metric-beta" class="text-2xl font-bold mt-2 text-rose-400 transition-all">0.0</h3>
                     </div>
                 </div>
@@ -90,7 +93,7 @@
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
                         <div>
                             <h2 class="text-md font-semibold mb-2 text-slate-300 border-b border-slate-800 pb-2">Hardware Link</h2>
-                            <p class="text-xs text-slate-400 mb-6"> Please Link an active signal stream selection to the main display interface node.</p>
+                            <p class="text-xs text-slate-400 mb-6">Link an active signal stream selection to the main display interface node.</p>
                         </div>
                         
                         <div class="flex items-center justify-between p-4 bg-slate-950 rounded-xl border border-slate-800">
@@ -137,63 +140,53 @@
     let streamInterval = null;
     let tickCounter = 0;
 
-
     let cameraStressScore = 1.0; 
-    let lastGazeX = 0;
-    let lastGazeY = 0;
     let gazeHistory = [];
-    let isCognitivelyBlocked = false;
     let lastLoggedLevel = -1;
+    let isWebgazerInitialized = false;
 
-
-    
     const physioNetData = [
-            //Making this as precise as possible with over 400 indeces 
-            //Random Shi at first lol 
-            1.5, 0.9, 1.4, 1.8, 2.1, 1.1, 0.7, 2.3, 3.1, 2.5, 1.2, 0.8, 1.02, 1.15, 0.98, 1.05, 1.22, 1.18, 0.95, 1.01, 
-            1.12, 1.15, 1.08, 1.21, 1.19, 1.05, 0.98, 1.02, 1.14, 1.10,
-    1.06, 1.11, 1.18, 1.25, 1.13, 1.07, 0.99, 1.04, 1.12, 1.16,
-    1.20, 1.15,  2.3, 3.1, 2.5, 1.2, 0.8, 1.02, 1.15, 0.98, 1.05, 1.08,
-    0.97, 1.01, 4.43, 4.50, 4.38, 4.25, 4.32, 4.44, 4.48, 4.36,
-    1.19, 1.14, 1.07, 1.01, 1.13, 1.18, 1.10, 1.04, 1.09, 1.12,
-    0.96, 1.03, 4.28, 4.40, 4.47, 4.32, 4.19, 4.25, 1.17, 1.11,
-    1.05, 1.01, 1.13, 1.19, 1.11, 1.07, 0.99, 1.04, 1.12, 1.16,
-    1.21, 1.14, 1.08, 1.02, 1.15, 1.17, 1.09, 1.05, 1.11, 1.07,
-    0.98, 1.03, 1.14, 1.22, 1.16, 1.09, 1.03, 1.10, 1.15, 1.12,
-            0.85, 0.78, 0.72, 0.69, 0.75, 0.81, 0.74, 0.68, 0.71, 0.77,
-    0.83, 0.76, 0.70, 0.65, 0.73, 0.79, 0.71, 0.67, 0.74, 0.80,
-    0.75, 0.69, 0.64, 0.72, 0.78, 0.73, 0.66, 0.70, 0.76, 0.82,
-    0.74, 0.68, 0.63, 0.71, 0.77, 0.72, 0.67, 0.69, 0.75, 0.81,
-    0.76, 0.70, 0.64, 0.73, 0.79, 0.71, 0.66, 0.72, 0.78, 0.73,
-    0.67, 0.62, 0.77, 4.44, 4.31, 4.18, 4.27, 4.39, 4.46, 4.33, 4.20, 4.28, 4.41, 4.48, 4.35,
-    0.72, 0.66, 0.73, 0.79, 0.74, 0.68, 0.63, 0.70, 0.76, 0.81,
-    0.75, 0.69, 0.64, 0.72, 0.78, 0.73, 0.67, 0.71, 0.77, 0.83,
-    0.76, 0.70, 0.65, 0.73, 0.79, 0.72, 0.66, 0.69, 0.75, 0.80,
-    0.74, 0.68, 0.63, 0.71, 0.77, 0.72, 0.67, 0.72, 0.78, 0.84, 
-            1.45, 1.58, 1.72, 1.89, 2.05, 2.18, 2.32, 2.45, 2.61, 2.78,
-    2.92, 3.08, 3.15, 3.29, 3.42, 3.58, 3.65, 3.79, 3.91, 4.05,
-    3.88, 3.72, 3.85, 4.01, 4.15, 4.28, 4.35, 4.42, 4.38, 4.25,
-    4.12, 4.29, 4.41, 4.36, 4.22, 4.18, 4.31, 4.45, 4.39, 4.26,
-    4.15, 4.38, 4.44, 4.31, 4.18, 4.27, 4.39, 4.46, 4.33, 4.20, 4.28, 4.41, 4.48, 4.35,
-    4.21, 4.30, 4.42, 4.49, 4.36, 4.23, 4.29, 4.43, 4.46, 4.32,
-    4.19, 4.26, 4.38, 4.45, 4.33, 4.20, 4.27, 4.40, 4.47, 4.34,
-    4.22, 4.31, 4.43, 4.50, 4.38, 4.25, 4.32, 4.44, 4.48, 4.36,
-    4.23, 4.30, 4.41, 4.49, 4.37, 4.24, 4.33, 4.45, 4.51, 4.40,
-            4.85, 5.12, 5.35, 5.20, 4.95, 4.78, 4.62, 4.35, 3.98, 3.62,
-    3.25,  0.70, 0.76, 0.82, 0.75, 0.69, 0.65, 0.71, 1.50, 1.35, 1.22, 1.15,
-    1.08, 1.02, 1.10, 1.16, 1.21, 1.14, 1.07, 1.01, 1.09, 1.15,
-    1.18, 1.12, 1.05, 0.99, 1.06, 1.12, 1.17, 1.10, 1.04, 0.98,
-    1.05, 1.11, 1.16, 1.09, 1.03, 0.97, 1.04, 1.10, 1.15, 1.08,
-    1.02, 0.96, 1.03, 1.09, 1.14, 1.07, 1.01, 0.95, 1.02, 1.08,
-    1.13, 1.06, 1.00, 0.94, 1.01, 1.07, 1.12, 1.05, 0.99, 0.93,
-    1.00, 1.06, 1.11, 1.04, 0.98, 0.92, 0.99, 1.05, 1.10, 1.03,
-    0.97, 0.91, 0.98, 1.04, 1.09, 1.02, 0.96, 0.90, 0.97, 1.03,
-    1.08, 1.01, 0.95, 0.89, 0.96, 1.02, 1.07, 1.00, 0.94, 1.05
-    //Having over 400 real human datasets is vital in the processing of making sure the algorithm stays accurate. 
-    //Maximum beta testing in order to minimize accuracy latencies in the real deal, this is simply an MVP. 
-        ];
-        let datasetIndex = 0;
-
+        1.5, 0.9, 1.4, 1.8, 2.1, 1.1, 0.7, 2.3, 3.1, 2.5, 1.2, 0.8, 1.02, 1.15, 0.98, 1.05, 1.22, 1.18, 0.95, 1.01, 
+        1.12, 1.15, 1.08, 1.21, 1.19, 1.05, 0.98, 1.02, 1.14, 1.10,
+        1.06, 1.11, 1.18, 1.25, 1.13, 1.07, 0.99, 1.04, 1.12, 1.16,
+        1.20, 1.15, 2.3, 3.1, 2.5, 1.2, 0.8, 1.02, 1.15, 0.98, 1.05, 1.08,
+        0.97, 1.01, 4.43, 4.50, 4.38, 4.25, 4.32, 4.44, 4.48, 4.36,
+        1.19, 1.14, 1.07, 1.01, 1.13, 1.18, 1.10, 1.04, 1.09, 1.12,
+        0.96, 1.03, 4.28, 4.40, 4.47, 4.32, 4.19, 4.25, 1.17, 1.11,
+        1.05, 1.01, 1.13, 1.19, 1.11, 1.07, 0.99, 1.04, 1.12, 1.16,
+        1.21, 1.14, 1.08, 1.02, 1.15, 1.17, 1.09, 1.05, 1.11, 1.07,
+        0.98, 1.03, 1.14, 1.22, 1.16, 1.09, 1.03, 1.10, 1.15, 1.12,
+        0.85, 0.78, 0.72, 0.69, 0.75, 0.81, 0.74, 0.68, 0.71, 0.77,
+        0.83, 0.76, 0.70, 0.65, 0.73, 0.79, 0.71, 0.67, 0.74, 0.80,
+        0.75, 0.69, 0.64, 0.72, 0.78, 0.73, 0.66, 0.70, 0.76, 0.82,
+        0.74, 0.68, 0.63, 0.71, 0.77, 0.72, 0.67, 0.69, 0.75, 0.81,
+        0.76, 0.70, 0.64, 0.73, 0.79, 0.71, 0.66, 0.72, 0.78, 0.73,
+        0.67, 0.62, 0.77, 4.44, 4.31, 4.18, 4.27, 4.39, 4.46, 4.33, 4.20, 4.28, 4.41, 4.48, 4.35,
+        0.72, 0.66, 0.73, 0.79, 0.74, 0.68, 0.63, 0.70, 0.76, 0.81,
+        0.75, 0.69, 0.64, 0.72, 0.78, 0.73, 0.67, 0.71, 0.77, 0.83,
+        0.76, 0.70, 0.65, 0.73, 0.79, 0.72, 0.66, 0.69, 0.75, 0.80,
+        0.74, 0.68, 0.63, 0.71, 0.77, 0.72, 0.67, 0.72, 0.78, 0.84, 
+        1.45, 1.58, 1.72, 1.89, 2.05, 2.18, 2.32, 2.45, 2.61, 2.78,
+        2.92, 3.08, 3.15, 3.29, 3.42, 3.58, 3.65, 3.79, 3.91, 4.05,
+        3.88, 3.72, 3.85, 4.01, 4.15, 4.28, 4.35, 4.42, 4.38, 4.25,
+        4.12, 4.29, 4.41, 4.36, 4.22, 4.18, 4.31, 4.45, 4.39, 4.26,
+        4.15, 4.38, 4.44, 4.31, 4.18, 4.27, 4.39, 4.46, 4.33, 4.20, 4.28, 4.41, 4.48, 4.35,
+        4.21, 4.30, 4.42, 4.49, 4.36, 4.23, 4.29, 4.43, 4.46, 4.32,
+        4.19, 4.26, 4.38, 4.45, 4.33, 4.20, 4.27, 4.40, 4.47, 4.34,
+        4.22, 4.31, 4.43, 4.50, 4.38, 4.25, 4.32, 4.44, 4.48, 4.36,
+        4.23, 4.30, 4.41, 4.49, 4.37, 4.24, 4.33, 4.45, 4.51, 4.40,
+        4.85, 5.12, 5.35, 5.20, 4.95, 4.78, 4.62, 4.35, 3.98, 3.62,
+        3.25, 0.70, 0.76, 0.82, 0.75, 0.69, 0.65, 0.71, 1.50, 1.35, 1.22, 1.15,
+        1.08, 1.02, 1.10, 1.16, 1.21, 1.14, 1.07, 1.01, 1.09, 1.15,
+        1.18, 1.12, 1.05, 0.99, 1.06, 1.12, 1.17, 1.10, 1.04, 0.98,
+        1.05, 1.11, 1.16, 1.09, 1.03, 0.97, 1.04, 1.10, 1.15, 1.08,
+        1.02, 0.96, 1.03, 1.09, 1.14, 1.07, 1.01, 0.95, 1.02, 1.08,
+        1.13, 1.06, 1.00, 0.94, 1.01, 1.07, 1.12, 1.05, 0.99, 0.93,
+        1.00, 1.06, 1.11, 1.04, 0.98, 0.92, 0.99, 1.05, 1.10, 1.03,
+        0.97, 0.91, 0.98, 1.04, 1.09, 1.02, 0.96, 0.90, 0.97, 1.03,
+        1.08, 1.01, 0.95, 0.89, 0.96, 1.02, 1.07, 1.00, 0.94, 1.05
+    ];
+    let datasetIndex = 0;
 
     const modeDatasetBtn = document.getElementById('modeDatasetBtn');
     const modeWebcamBtn = document.getElementById('modeWebcamBtn');
@@ -241,7 +234,6 @@
         ratioChart.update();
     }
 
-
     function logMessage(text, type = "SYSTEM", details = []) {
         const logsContainer = document.getElementById('intervention-status');
         const timestamp = new Date().toTimeString().split(' ')[0];
@@ -256,9 +248,7 @@
         let detailsHTML = '';
         if (details.length > 0) {
             detailsHTML = `<div class="pl-4 text-xs space-y-0.5 mt-0.5">`;
-            details.forEach(item => {
-                detailsHTML += `<p class="text-slate-400">↳ ${item}</p>`;
-            });
+            details.forEach(item => { detailsHTML += `<p class="text-slate-400">↳ ${item}</p>`; });
             detailsHTML += `</div>`;
         }
 
@@ -278,12 +268,55 @@
         }
 
         logsContainer.innerHTML += logHTML;
-        
-        if (logsContainer.children.length > 30) {
-            logsContainer.removeChild(logsContainer.firstElementChild);
+        if (logsContainer.children.length > 30) logsContainer.removeChild(logsContainer.firstElementChild);
+        logsContainer.scrollTop = logsContainer.scrollHeight;
+    }
+
+
+    function startWebcamEyeTracking() {
+        if (typeof webgazer === 'undefined') {
+            logMessage("WebGazer library failed to load from CDN.", "ERROR");
+            return;
         }
 
-        logsContainer.scrollTop = logsContainer.scrollHeight;
+        logMessage("Initializing Ocular Matrix...", "ACTIVE");
+        placeholderText.classList.add('hidden');
+
+        webgazer.setGazeListener((data, elapsedTime) => {
+            if (data == null) return;
+            
+
+            gazeHistory.push({ x: data.x, y: data.y, time: elapsedTime });
+            if (gazeHistory.length > 30) gazeHistory.shift(); 
+
+            
+            if (gazeHistory.length >= 10) {
+                const avgX = gazeHistory.reduce((acc, g) => acc + g.x, 0) / gazeHistory.length;
+                const avgY = gazeHistory.reduce((acc, g) => acc + g.y, 0) / gazeHistory.length;
+                
+                const variance = gazeHistory.reduce((acc, g) => acc + Math.hypot(g.x - avgX, g.y - avgY), 0) / gazeHistory.length;
+
+                
+                if (variance < 40) {
+                    cameraStressScore = Math.min(cameraStressScore + 0.1, 5.0); 
+                } else {
+                    cameraStressScore = Math.max(cameraStressScore - 0.05, 1.0); 
+                }
+            }
+        }).begin();
+
+        webgazer.showPredictionPoints(true);
+        isWebgazerInitialized = true;
+    }
+
+    function stopWebcamEyeTracking() {
+        if (isWebgazerInitialized) {
+            try {
+                webgazer.pause();
+                webgazer.end();
+            } catch(e) {}
+            isWebgazerInitialized = false;
+        }
     }
 
     modeDatasetBtn.addEventListener('click', () => {
@@ -291,7 +324,7 @@
         modeDatasetBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all bg-blue-600 text-white shadow-sm";
         modeWebcamBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all text-slate-400 hover:text-slate-200";
         
-        try { webgazer.end(); } catch(e){}
+        stopWebcamEyeTracking();
 
         videoContainer.innerHTML = '';
         videoContainer.appendChild(placeholderText);
@@ -306,7 +339,7 @@
         modeWebcamBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all bg-emerald-600 text-white shadow-sm";
         modeDatasetBtn.className = "px-4 py-1.5 rounded-md text-xs font-mono font-medium transition-all text-slate-400 hover:text-slate-200";
         
-        if(activeStream) {
+        if (activeStream) {
             startWebcamEyeTracking();
         } else {
             logMessage("Webcam framework armed. Toggle the 'Hardware Link' switch to activate data tracking.", "ACTIVE");
@@ -346,11 +379,10 @@
 
             document.getElementById('intervention-status').innerHTML = `<p class="italic text-slate-500">[SYSTEM] Awaiting passive stream connection...</p>`;
             clearInterval(streamInterval);
-            try { webgazer.end(); } catch(e){}
+            stopWebcamEyeTracking();
         }
     }
 
- 
     function runDataProcessorDaemon() {
         tickCounter++;
         let inputIntensity = 1.0;
@@ -449,119 +481,6 @@
             badge.innerText = "System Online";
             card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl";
         }
-    }
-
-    let lastGazeTimestamp = Date.now();
-    let blinkCountWindow = [];
-    let isCurrentlyBlinking = false;
-
-    async function startWebcamEyeTracking() {
-        logMessage("Initializing Ocular & Blink Stress Tracking Matrix...", "ACTIVE");
-
-        try { webgazer.end(); } catch(e){}
-
-        webgazer.params.showVideoPreview = true;
-        webgazer.params.showCanvasPreview = false; 
-        webgazer.params.showFaceOverlay = false;
-
- 
-        lastGazeX = window.innerWidth / 2;
-        lastGazeY = window.innerHeight / 2;
-
-        webgazer.setGazeListener(function(data, elapsedTime) {
-            if (!activeStream || currentMode !== 'webcam') return;
-
-            const now = Date.now();
-
-            if (data === null) {
-                if (!isCurrentlyBlinking) {
-                    isCurrentlyBlinking = true;
-                    blinkCountWindow.push(now);
-                }
-                return;
-            }
-
-            isCurrentlyBlinking = false;
-            lastGazeTimestamp = now;
-
- 
-            blinkCountWindow = blinkCountWindow.filter(t => now - t < 5000);
-            const blinkRatePer5Sec = blinkCountWindow.length;
-
-            const alpha = 0.2; // Smooths out noisy webcam coordinate jumps
-        const smoothedX = lastGazeX + alpha * (data.x - lastGazeX);
-        const smoothedY = lastGazeY + alpha * (data.y - lastGazeY);
-
-        const saccadeDistance = Math.sqrt(
-            Math.pow(smoothedX - lastGazeX, 2) + Math.pow(smoothedY - lastGazeY, 2)
-        );
-
-            gazeHistory.push(saccadeDistance);
-            if (gazeHistory.length > 15) gazeHistory.shift();
-
-            const avgDistance = gazeHistory.reduce((a, b) => a + b, 0) / gazeHistory.length;
-
-        
-            if (blinkRatePer5Sec >= 3 || avgDistance > 120) { 
-        
-                cameraStressScore = Math.min(cameraStressScore + 0.35, 6.0); 
-                
-                if (blinkRatePer5Sec >= 3 && tickCounter % 2 === 0) {
-                    logMessage(`RAPID BLINKING DETECTED (${blinkRatePer5Sec} blinks / 5s)`, "WARNING");
-                }
-            } else if (avgDistance < 45) { 
-                cameraStressScore = Math.min(cameraStressScore + 0.25, 5.0); 
-                if (tickCounter % 2 === 0) {
-        logMessage("COGNITIVE LOCKOUT DETECTED (Prolonged Fixation)", "WARNING");
-    }
-}
-            else {
-            
-                cameraStressScore = Math.max(cameraStressScore - 0.01, 0.8); 
-            }
-
-            lastGazeX = currentX;
-            lastGazeY = currentY;
-
-            
-            const debugOverlay = document.getElementById('debug-telemetry');
-            if (debugOverlay) {
-                debugOverlay.innerText = `Score: ${cameraStressScore.toFixed(2)} | Blinks/5s: ${blinkRatePer5Sec} | Motion: ${avgDistance.toFixed(0)}px`;
-            }
-        });
-
-        try {
-            webgazer.begin();
-        } catch (err) {
-            logMessage("Camera matrix initialization failed: " + err.message, "ERROR");
-        }
-
-        const videoCheckInterval = setInterval(() => {
-            const nativeVideo = document.getElementById('webgazerVideoFeed') || document.querySelector('video');
-            if (nativeVideo && videoContainer) {
-                clearInterval(videoCheckInterval);
-                placeholderText.classList.add('hidden');
-                
-                nativeVideo.id = 'webgazerVideoFeed';
-                nativeVideo.style.position = 'relative';
-                nativeVideo.style.width = '100%';
-                nativeVideo.style.height = '100%';
-                nativeVideo.style.objectFit = 'cover';
-                nativeVideo.style.display = 'block';
-                
-      
-                if (!document.getElementById('debug-telemetry')) {
-                    const debugDiv = document.createElement('div');
-                    debugDiv.id = 'debug-telemetry';
-                    debugDiv.className = 'absolute top-2 right-2 bg-slate-950/80 border border-slate-700 px-2 py-1 rounded text-[10px] font-mono text-emerald-400 z-10 pointer-events-none';
-                    debugDiv.innerText = 'Initializing metrics...';
-                    videoContainer.appendChild(debugDiv);
-                }
-
-                videoContainer.appendChild(nativeVideo);
-                logMessage("Webcam matrix online. Blink & gaze velocity active.", "ACTIVE");
-            }
-        }, 250);
     }
 </script>
 </body>
