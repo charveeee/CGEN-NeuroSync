@@ -8,15 +8,21 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
     <style>
-
-        #webgazerVideoFeed, #webgazerFaceOverlay, #webgazerFaceFeedbackBox {
+        #videoFeedbackContainer {
+            position: relative !important;
+            overflow: hidden !important;
+        }
+        #webgazerVideoFeed, 
+        #webgazerFaceOverlay, 
+        #webgazerFaceFeedbackBox {
             position: absolute !important;
             top: 0 !important;
             left: 0 !important;
             width: 100% !important;
             height: 100% !important;
             object-fit: cover !important;
-            transform: scaleX(-1); 
+            transform: scaleX(-1);
+            border-radius: 0.75rem !important;
         }
         #webgazerGazeDot {
             z-index: 9999 !important;
@@ -28,7 +34,6 @@
     <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
         <div class="flex items-center space-x-3">
             <div id="status-indicator" class="h-3 w-3 rounded-full bg-slate-600 shadow-lg transition-all duration-300"></div>
-            
             <a href="index.html" class="group flex items-center">
                 <h1 class="text-xl font-bold tracking-wider text-slate-100 group-hover:text-emerald-400 transition-colors">
                     CGEN
@@ -272,7 +277,6 @@
         logsContainer.scrollTop = logsContainer.scrollHeight;
     }
 
-
     function startWebcamEyeTracking() {
         if (typeof webgazer === 'undefined') {
             logMessage("WebGazer library failed to load from CDN.", "ERROR");
@@ -285,25 +289,33 @@
         webgazer.setGazeListener((data, elapsedTime) => {
             if (data == null) return;
             
-
             gazeHistory.push({ x: data.x, y: data.y, time: elapsedTime });
-            if (gazeHistory.length > 30) gazeHistory.shift(); 
+            if (gazeHistory.length > 30) gazeHistory.shift();
 
-            
             if (gazeHistory.length >= 10) {
                 const avgX = gazeHistory.reduce((acc, g) => acc + g.x, 0) / gazeHistory.length;
                 const avgY = gazeHistory.reduce((acc, g) => acc + g.y, 0) / gazeHistory.length;
                 
                 const variance = gazeHistory.reduce((acc, g) => acc + Math.hypot(g.x - avgX, g.y - avgY), 0) / gazeHistory.length;
 
-                
                 if (variance < 40) {
-                    cameraStressScore = Math.min(cameraStressScore + 0.1, 5.0); 
+                    cameraStressScore = Math.min(cameraStressScore + 0.1, 5.0);
                 } else {
-                    cameraStressScore = Math.max(cameraStressScore - 0.05, 1.0); 
+                    cameraStressScore = Math.max(cameraStressScore - 0.05, 1.0);
                 }
             }
         }).begin();
+
+        setTimeout(() => {
+            const videoFeed = document.getElementById('webgazerVideoFeed');
+            const overlay = document.getElementById('webgazerFaceOverlay');
+            const feedbackBox = document.getElementById('webgazerFaceFeedbackBox');
+            const container = document.getElementById('videoFeedbackContainer');
+
+            if (videoFeed && container) container.appendChild(videoFeed);
+            if (overlay && container) container.appendChild(overlay);
+            if (feedbackBox && container) container.appendChild(feedbackBox);
+        }, 500);
 
         webgazer.showPredictionPoints(true);
         isWebgazerInitialized = true;
