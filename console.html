@@ -75,15 +75,15 @@
                     </div>
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
                         <div class="text-xs text-slate-400 font-medium uppercase tracking-wider flex justify-between items-center">
-                            <span>Alpha (Calm)</span>
+                            <span>Fused Load Index</span>
                         </div>
-                        <h3 id="metric-alpha" class="text-2xl font-bold mt-2 text-teal-400 transition-all">0.0</h3>
+                        <h3 id="metric-fused" class="text-2xl font-bold mt-2 text-emerald-400 transition-all">0.00</h3>
                     </div>
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
                         <div class="text-xs text-slate-400 font-medium uppercase tracking-wider flex justify-between items-center">
-                            <span>Beta (Focus)</span>
+                            <span>Adaptive Baseline</span>
                         </div>
-                        <h3 id="metric-beta" class="text-2xl font-bold mt-2 text-rose-400 transition-all">0.0</h3>
+                        <h3 id="metric-baseline" class="text-2xl font-bold mt-2 text-rose-400 transition-all">1.50</h3>
                     </div>
                 </div>
 
@@ -114,7 +114,7 @@
                     </div>
 
                     <div id="intervention-card" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col transition-all duration-500">
-                        <h2 class="text-md font-semibold mb-3 text-slate-300 border-b border-slate-800 pb-2">CGEN Action Logs</h2>
+                        <h2 class="text-md font-semibold mb-3 text-slate-300 border-b border-slate-800 pb-2">CGEN Adaptive Action Logs</h2>
                         <div id="intervention-status" class="text-slate-400 text-xs font-mono space-y-2 max-h-[160px] overflow-y-auto flex-grow scrollbar-thin">
                             <p class="italic text-slate-500">[SYSTEM] Awaiting passive stream connection...</p>
                         </div>
@@ -149,6 +149,9 @@
     let gazeHistory = [];
     let lastLoggedLevel = -1;
     let isWebgazerInitialized = false;
+
+    let adaptiveBaseline = 1.5;
+    let historicalRatios = [];
 
     const physioNetData = [
         1.5, 0.9, 1.4, 1.8, 2.1, 1.1, 0.7, 2.3, 3.1, 2.5, 1.2, 0.8, 1.02, 1.15, 0.98, 1.05, 1.22, 1.18, 0.95, 1.01, 
@@ -206,7 +209,7 @@
         data: {
             labels: Array(20).fill(''),
             datasets: [{
-                label: 'Beta/Alpha Ratio (Cognitive Load)',
+                label: 'Fused Cognitive State Index',
                 data: initialData,
                 borderColor: '#60a5fa',
                 borderWidth: 3,
@@ -410,63 +413,64 @@
         }
 
         document.getElementById('current-sim-state').innerText = displayLabel;
-        calculateLocalMetrics(inputIntensity);
+        runFusedStateClassification(inputIntensity);
     }
 
-    function calculateLocalMetrics(intensity) {
-        let baseAlpha = 1200.0;
-        let baseBeta = 1800.0;
-        
-        if (intensity >= 3.5) { 
-            baseAlpha = 300.0 + (Math.random() * 50);
-            baseBeta = 3500.0 + (Math.random() * 300);
-        } else if (intensity > 1.8) { 
-            baseAlpha = 700.0 + (Math.random() * 100);
-            baseBeta = 2400.0 + (Math.random() * 200);
-        } else { 
-            baseAlpha = 1400.0 + (Math.random() * 100);
-            baseBeta = 1600.0 + (Math.random() * 100);
+    function runFusedStateClassification(intensity) {
+        let eegBetaRatio = intensity;
+        let ocularFixationWeight = (currentMode === 'webcam') ? cameraStressScore : 1.0;
+
+        let fusedScore = (eegBetaRatio * 0.6) + (ocularFixationWeight * 0.4);
+
+        historicalRatios.push(fusedScore);
+        if (historicalRatios.length > 15) historicalRatios.shift();
+
+        const avgHistorical = historicalRatios.reduce((a, b) => a + b, 0) / historicalRatios.length;
+        adaptiveBaseline = (adaptiveBaseline * 0.85) + (avgHistorical * 0.15);
+
+        let interventionLevel = 0;
+        if (fusedScore > adaptiveBaseline * 1.8) {
+            interventionLevel = 3;
+        } else if (fusedScore > adaptiveBaseline * 1.3) {
+            interventionLevel = 1;
         }
 
-        const calculatedRatio = baseBeta / baseAlpha;
-        const interventionLevel = calculatedRatio > 4.0 ? 3 : (calculatedRatio > 2.5 ? 1 : 0);
+        document.getElementById('metric-ratio').innerText = eegBetaRatio.toFixed(2);
+        document.getElementById('metric-fused').innerText = fusedScore.toFixed(2);
+        document.getElementById('metric-baseline').innerText = adaptiveBaseline.toFixed(2);
 
-        document.getElementById('metric-ratio').innerText = calculatedRatio.toFixed(2);
-        document.getElementById('metric-alpha').innerText = baseAlpha.toFixed(1);
-        document.getElementById('metric-beta').innerText = baseBeta.toFixed(1);
-        
-        addChartData(calculatedRatio);
+        addChartData(fusedScore);
         updateVisualEnvironment(interventionLevel);
 
         if (tickCounter % 3 === 0) {
             if (interventionLevel === 3) {
-                logMessage(`HIGH STRESS DETECTED (Ratio: ${calculatedRatio.toFixed(2)})`, "CRITICAL", [
-                    `Alpha Desynchronization: ${baseAlpha.toFixed(1)} uV²`,
-                    `Beta Power Surge: ${baseBeta.toFixed(1)} uV²`,
-                    `Interface adjustments engaged`
+                logMessage(`FUSED CRITICAL STATE (Fused Load: ${fusedScore.toFixed(2)})`, "CRITICAL", [
+                    `Dynamic Threshold: ${adaptiveBaseline.toFixed(2)}`,
+                    `EEG / Vision Fusion Spike: Exceeded +80% over baseline`,
+                    `Initiating Adaptive Interface Mitigation`
                 ]);
             } else if (interventionLevel === 1) {
-                logMessage(`MODERATE COGNITIVE LOAD (Ratio: ${calculatedRatio.toFixed(2)})`, "WARNING", [
-                    `Saccadic movement elevated`,
-                    `Monitoring baseline shift...`
+                logMessage(`FUSED MODERATE ELEVATION (Fused Load: ${fusedScore.toFixed(2)})`, "WARNING", [
+                    `Dynamic Threshold: ${adaptiveBaseline.toFixed(2)}`,
+                    `Sensory load increasing; recalibrating profile...`
                 ]);
             } else {
-                logMessage(`Optimal Focus State (Ratio: ${calculatedRatio.toFixed(2)})`, "MONITORING", [
-                    `Biometric baseline stable`
+                logMessage(`Fused Biometric State Stable (Score: ${fusedScore.toFixed(2)})`, "MONITORING", [
+                    `Baseline target: ${adaptiveBaseline.toFixed(2)}`
                 ]);
             }
         }
 
         if (interventionLevel !== lastLoggedLevel) {
             if (interventionLevel === 3) {
-                logMessage("CRITICAL THRESHOLD EXCEEDED. Cognitive Lockout initiated.", "CRITICAL", [
-                    "Suppressing notifications",
-                    "Simplifying active UI context"
+                logMessage("ADAPTIVE CLASSIFICATION: High Stress Event Fused.", "CRITICAL", [
+                    "Engaging cognitive overload intervention",
+                    "UI context density reduced"
                 ]);
             } else if (interventionLevel === 1) {
-                logMessage("Cognitive fatigue build-up detected. Adjusting interface profile.", "WARNING");
+                logMessage("ADAPTIVE CLASSIFICATION: Cognitive shift detected.", "WARNING");
             } else if (lastLoggedLevel !== -1) {
-                logMessage("Cognitive load normalized. Biometric equilibrium restored.", "ACTIVE");
+                logMessage("ADAPTIVE CLASSIFICATION: Equilibrium restored.", "ACTIVE");
             }
             lastLoggedLevel = interventionLevel;
         }
@@ -480,12 +484,12 @@
         if (level >= 3) {
             body.className = "bg-slate-950 text-slate-300 min-h-screen font-sans transition-all duration-1000 saturate-[0.5]";
             badge.className = "bg-rose-600 text-white border border-rose-500 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest animate-pulse";
-            badge.innerText = "CRITICAL: HIGH STRESS / LOCKOUT";
+            badge.innerText = "CRITICAL: FUSED HIGH STRESS";
             card.className = "bg-slate-900 border border-rose-600 rounded-2xl p-6 shadow-xl shadow-rose-950/20";
         } else if (level > 0) {
             body.className = "bg-slate-950 text-slate-300 min-h-screen font-sans transition-all duration-1000 saturate-[0.8]";
             badge.className = "bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest animate-pulse";
-            badge.innerText = `CGEN ADJUSTING: LEVEL ${level}`;
+            badge.innerText = `ADAPTIVE INTERVENTION: L${level}`;
             card.className = "bg-slate-900 border border-amber-500/30 rounded-2xl p-6 shadow-xl shadow-amber-950/10";
         } else {
             body.className = "bg-slate-950 text-slate-100 min-h-screen font-sans transition-all duration-1000";
