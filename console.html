@@ -63,34 +63,36 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
             
-           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-    <a href="docs.html#beta-alpha" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg hover:border-blue-500/50 hover:bg-slate-800/50 transition-all cursor-pointer block">
-        <div class="text-xs text-slate-400 font-medium uppercase tracking-wider flex justify-between items-center">
-            <span>Beta/Alpha Ratio</span>
-        </div>
-        <h3 id="metric-ratio" class="text-2xl font-bold mt-2 text-blue-400 transition-all">0.00</h3>
-    </a>
+            <div class="space-y-6 flex flex-col justify-between">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <a href="docs.html#beta-alpha" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg hover:border-blue-500/50 hover:bg-slate-800/50 transition-all cursor-pointer block">
+                        <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">
+                            <span>Beta/Alpha Ratio</span>
+                        </div>
+                        <h3 id="metric-ratio" class="text-2xl font-bold mt-2 text-blue-400 transition-all">0.00</h3>
+                    </a>
 
-    <a href="docs.html#fused-load" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg hover:border-emerald-500/50 hover:bg-slate-800/50 transition-all cursor-pointer block">
-        <div class="text-xs text-slate-400 font-medium uppercase tracking-wider flex justify-between items-center">
-            <span>Fused Load Index</span>
-        </div>
-        <h3 id="metric-fused" class="text-2xl font-bold mt-2 text-emerald-400 transition-all">0.00</h3>
-    </a>
+                    <a href="docs.html#fused-load" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg hover:border-emerald-500/50 hover:bg-slate-800/50 transition-all cursor-pointer block">
+                        <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">
+                            <span>Fused Load Index</span>
+                        </div>
+                        <h3 id="metric-fused" class="text-2xl font-bold mt-2 text-emerald-400 transition-all">0.00</h3>
+                    </a>
 
-    <a href="docs.html#adaptive-baseline" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg hover:border-rose-500/50 hover:bg-slate-800/50 transition-all cursor-pointer block">
-        <div class="text-xs text-slate-400 font-medium uppercase tracking-wider flex justify-between items-center">
-            <span>Adaptive Baseline</span>
-        </div>
-        <h3 id="metric-baseline" class="text-2xl font-bold mt-2 text-rose-400 transition-all">1.50</h3>
-    </a>
-</div>
+                    <a href="docs.html#adaptive-baseline" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg hover:border-rose-500/50 hover:bg-slate-800/50 transition-all cursor-pointer block">
+                        <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">
+                            <span>Adaptive Baseline</span>
+                        </div>
+                        <h3 id="metric-baseline" class="text-2xl font-bold mt-2 text-rose-400 transition-all">1.50</h3>
+                    </a>
+                </div>
 
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
                     <h2 class="text-sm font-mono uppercase font-semibold mb-4 text-slate-400 tracking-wider">Continuous Biometric Telemetry</h2>
-                    <div class="h-64 w-full">
+                    <div class="h-56 w-full">
                         <canvas id="ratioChart"></canvas>
                     </div>
                 </div>
@@ -123,13 +125,13 @@
                 </div>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col h-full min-h-[520px]">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between h-full min-h-[500px]">
                 <div class="mb-4">
                     <h2 class="text-sm font-mono uppercase font-semibold text-slate-400 tracking-wider">Neural Vision Proxy / Gaze Tracking Matrix</h2>
                     <p class="text-xs text-slate-500 mt-1">Locks biometric feedback onto user focus. Lingering fixations simulate Cognitive Block events.</p>
                 </div>
                 
-                <div id="videoFeedbackContainer" class="flex-grow w-full bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800 flex flex-col items-center justify-center p-4">
+                <div id="videoFeedbackContainer" class="flex-grow w-full bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800 flex flex-col items-center justify-center p-4 min-h-[380px]">
                     <div id="webcamPlaceholderText" class="text-center space-y-2">
                         <div class="w-12 h-12 rounded-full border border-dashed border-slate-700 flex items-center justify-center mx-auto animate-spin">⚙️</div>
                         <p class="text-xs font-mono text-slate-500">Select LIVE CAMERA Mode to engage matrix layout.</p>
